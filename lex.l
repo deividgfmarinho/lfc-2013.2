@@ -17,7 +17,7 @@
 
 [/][*]([^*]|[*]+[^*/])*[*]+[/] {printf("COMENTÁRIO: %s \n",yytext );}
 
-["]([^"\\\n]|\\.)*["] {printf("STRING: %s \n",yytext );}
+["]([^"\\\n]|\\[nt"])*["] {printf("STRING: %s \n",yytext );}
 
 [+-]?[0-9]+ {printf("NÚMERO INTEIRO: %s \n",yytext );}
 
@@ -124,9 +124,14 @@
 
 
 [0-9]+([^0123456789.,;\n\]\)]+|[.,][0-9]*[^0123456789;\n\]\)]+)	{ printf("ERRO LÉXICO. VALOR NAO RECONHECIDO:  %s \n",yytext ); }
-[^"]([^"\\\n]|\\.)*["][,\);&|+:\?\]\=]	{ printf("ERRO LÉXICO. ERA ESPERADO A ABERTURA DAS ASPAS DUPLAS em  %s \n",yytext ); }
+[^"]([^"\\\n]|\\.)*["][" "]*[,\);&|+:\?\]\=]	{ printf("ERRO LÉXICO. ERA ESPERADO A ABERTURA DAS ASPAS DUPLAS em  %s \n",yytext ); }
 ["]([^"\\\n]|\\.)*[^"]?			{ printf("ERRO LÉXICO. ERA ESPERADO O FECHAMENTO DAS ASPAS DUPLAS em  %s \n",yytext ); }
-[^"_"[a-z][A-Z][0-9]]+.*		{ printf("ERRO LÉXICO. EXPRESSAO OU IDENTIFICADOR INVALIDO:  %s \n",yytext ); }
+[^"_"[a-z][A-Z][0-9]]+.*		{ printf("ERRO LÉXICO. EXPRESSAO OU IDENTIFICADOR INVÁLIDO:  %s \n",yytext ); }
+["]([^"\\\n]|\\[^nt"])*\\[^nt"]([^"\\\n]|\\.)*["] {printf("ERRO LÉXICO. ESCAPE NÃO RECONHECIDO NA STRING: %s \n",yytext );}
+\'\\([^\\\'"?abfnrtvx01234567]+|[0-7]+[^01234567]|x([^0123456789abcdefABCDEF]|([0-9]|[a-f]|[A-F])+[^0123456789abcdefABCDEF])?)\' {printf("ERRO LÉXICO. ESCAPE INVÁLIDO NO CARACTERE: %s \n",yytext );}
+\'(([^\\\'\n]|\\(\\|[']|["]|[?]|0|[a]|[b]|[f]|[n]|[r]|[t]|[v]|[0-7]{1,3}|x(([0-9]|[a-f]|[A-F]){1,2})))[^\'\n]+\') {printf("ERRO LÉXICO. CARACTERE INVÁLIDO: %s \n",yytext );}
+[^\'](\'|([^\\\'\n]|\\(\\|[']|["]|[?]|0|[a]|[b]|[f]|[n]|[r]|[t]|[v]|[0-7]{1,3}|x(([0-9]|[a-f]|[A-F]){1,2})))\')[" "]*[,\);&|+:\?\]\=] {printf("ERRO LÉXICO. ERA ESPERADO A ABERTURA DA ASPA SIMPLES em %s \n",yytext );}
+\'([^\']?|([^\\\'\n]|\\(\\|[']|["]|[?]|0|[a]|[b]|[f]|[n]|[r]|[t]|[v]|[0-7]{1,3}|x(([0-9]|[a-f]|[A-F]){1,2})))[^\']?) {printf("ERRO LÉXICO. ERA ESPERADO O FECHAMENTO DA ASPA SIMPLES em %s \n",yytext );}
 
 .|\n|\r
 
