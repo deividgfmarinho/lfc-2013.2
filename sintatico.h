@@ -76,39 +76,39 @@ typedef union YYSTYPE
 {
 
 /* Line 2068 of yacc.c  */
-#line 15 "sintatico.y"
+#line 24 "sintatico.y"
 
 	int inteiro; 
 	char* string;
-	struct AAprograma* programa;
-	struct AAdeclaracaolista* declaracaolista;
-	struct AAdeclaracao* declaracao; 
-	struct AAvardeclaracao* vardeclaracao;
-	struct AAtipoespecificador* tipoespecificador;
-	struct AAfundeclaracao* fundeclaracao;
-	struct AAparams* params;
-	struct AAparamlista* paramlista;
-	struct AAparam* param;
-	struct AAcompostodecl* compostodecl;
-	struct AAlocaldeclaracoes* localdeclaracoes;
-	struct AAstatementlista* statementlista;
-	struct AAstatement* statement;
-	struct AAexpressaodecl* expressaodecl;
-	struct AAselecaodecl* selecaodecl;
-	struct AAiteracaodecl* iteracaodecl;
-	struct AAretornodecl* retornodecl;
-	struct AAexpressao* expressao;
-	struct AAvar* var; 
-	struct AAsimplesexpressao* simplesexpressao; 
-	struct AArelacional* relacional;
-	struct AAsomaexpressao* somaexpressao;
-	struct AAsoma* soma;
-	struct AAtermo* termo;
-	struct AAmult* mult;
-	struct AAfator* fator;
-	struct AAativacao* ativacao;
-	struct AAargs* args;
-	struct AAarglista* arglista;
+	Tprograma programa;
+	Tdeclaracaolista declaracaolista;
+	Tdeclaracao declaracao; 
+	Tvardeclaracao vardeclaracao;
+	Ttipoespecificador tipoespecificador;
+	Tfundeclaracao fundeclaracao;
+	Tparams params;
+	Tparamlista paramlista;
+	Tparam param;
+	Tcompostodecl compostodecl;
+	Tlocaldeclaracoes localdeclaracoes;
+	Tstatementlista statementlista;
+	Tstatement statement;
+	Texpressaodecl expressaodecl;
+	Tselecaodecl selecaodecl;
+	Titeracaodecl iteracaodecl;
+	Tretornodecl retornodecl;
+	Texpressao expressao;
+	Tvar var; 
+	Tsimplesexpressao simplesexpressao; 
+	Trelacional relacional;
+	Tsomaexpressao somaexpressao;
+	Tsoma soma;
+	Ttermo termo;
+	Tmult mult;
+	Tfator fator;
+	Tativacao ativacao;
+	Targs args;
+	Targlista arglista;
 
 
 

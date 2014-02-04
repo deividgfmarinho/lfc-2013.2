@@ -2,52 +2,49 @@
 #define ESTRUTURAS_H
 
 
-/*  Deivid Goes Farias Marinho
+/* 	
+    Deivid Goes Farias Marinho
     201110005298
     Trabalho LFC - Parte 02
-*/
 
 
-
-
-/* 	
 	ESTRUTURAS USADAS PARA A GRAMÁTICA LIVRE DE CONTEXTO PARA A LINGUAGEM C-
 	(gramática adaptada do livro de Kenneth C. Louden para aceitar strings)
+
+	Neste arquivo também estão contidos as assinaturas das funções para inserção dos nós.
+
 */
 
 
-typedef struct AAprograma* Tprograma;
-typedef struct AAdeclaracaolista* Tdeclaracaolista;
-typedef struct AAdeclaracao* Tdeclaracao;
-typedef struct AAvardeclaracao* Tvardeclaracao;
-typedef struct AAtipoespecificador* Ttipoespecificador;
-typedef struct AAfundeclaracao* Tfundeclaracao;
-typedef struct AAparams* Tparams;
-typedef struct AAparamlista* Tparamlista;
-typedef struct AAparam* Tparam;
-typedef struct AAcompostodecl* Tcompostodecl;
-typedef struct AAlocaldeclaracoes* Tlocaldeclaracoes;
-typedef struct AAstatementlista* Tstatementlista;
-typedef struct AAstatement* Tstatement;
-typedef struct AAexpressaodecl* Texpressaodecl;
-typedef struct AAselecaodecl* Tselecaodecl;
-typedef struct AAiteracaodecl* Titeracaodecl;
-typedef struct AAretornodecl* Tretornodecl;
-typedef struct AAexpressao* Texpressao;
-typedef struct AAvar* Tvar;
-typedef struct AAsimplesexpressao* Tsimplesexpressao;
-typedef struct AArelacional* Trelacional;
-typedef struct AAsomaexpressao* Tsomaexpressao;
-typedef struct AAsoma* Tsoma;
-typedef struct AAtermo* Ttermo;
-typedef struct AAmult* Tmult;
-typedef struct AAfator* Tfator;
-typedef struct AAativacao* Tativacao;
-typedef struct AAargs* Targs;
-typedef struct AAarglista* Targlista;
-
-
-
+typedef struct AAprograma *Tprograma;
+typedef struct AAdeclaracaolista *Tdeclaracaolista;
+typedef struct AAdeclaracao *Tdeclaracao;
+typedef struct AAvardeclaracao *Tvardeclaracao;
+typedef struct AAtipoespecificador *Ttipoespecificador;
+typedef struct AAfundeclaracao *Tfundeclaracao;
+typedef struct AAparams *Tparams;
+typedef struct AAparamlista *Tparamlista;
+typedef struct AAparam *Tparam;
+typedef struct AAcompostodecl *Tcompostodecl;
+typedef struct AAlocaldeclaracoes *Tlocaldeclaracoes;
+typedef struct AAstatementlista *Tstatementlista;
+typedef struct AAstatement *Tstatement;
+typedef struct AAexpressaodecl *Texpressaodecl;
+typedef struct AAselecaodecl *Tselecaodecl;
+typedef struct AAiteracaodecl *Titeracaodecl;
+typedef struct AAretornodecl *Tretornodecl;
+typedef struct AAexpressao *Texpressao;
+typedef struct AAvar *Tvar;
+typedef struct AAsimplesexpressao *Tsimplesexpressao;
+typedef struct AArelacional *Trelacional;
+typedef struct AAsomaexpressao *Tsomaexpressao;
+typedef struct AAsoma *Tsoma;
+typedef struct AAtermo *Ttermo;
+typedef struct AAmult *Tmult;
+typedef struct AAfator *Tfator;
+typedef struct AAativacao *Tativacao;
+typedef struct AAargs *Targs;
+typedef struct AAarglista *Targlista;
 
 
 
@@ -61,7 +58,9 @@ struct AAprograma {
 };
 
 
-// Cria o método
+/* Cria a chamada do método 
+   A implementação do método 
+   está em "arvoreabstrata.c" */
 Tprograma programa_declist(Tdeclaracaolista declist);
 
 /* FIM - programa -> declaracao-lista	*/
@@ -161,8 +160,6 @@ Tvardeclaracao vardecl_tesp_id_acol_num_fcol_ptvirg(Ttipoespecificador tesp, cha
 
 struct AAtipoespecificador{
 	
-	enum{Ftesp_int, Ftesp_void, Ftesp_string} tipo;
-	
 	// como os três são do mesmo tipo (char*), não precisa usar união
 	// já que nesse caso não há polimorfismo
 	// mas é necessário dois construtores diferentes para saber
@@ -172,14 +169,7 @@ struct AAtipoespecificador{
 };
 
 
-// tipo-especificador -> int 
-Ttipoespecificador tesp_int(char* tesp);
-
-// tipo-especificador -> void 
-Ttipoespecificador tesp_void(char* tesp);
-
-// tipo-especificador -> string 
-Ttipoespecificador tesp_string(char* tesp);
+Ttipoespecificador tesp(char* tesp);
 
 /* FIM - tipo-especificador -> int | void | string  */
 
@@ -190,8 +180,6 @@ Ttipoespecificador tesp_string(char* tesp);
 
 struct AAfundeclaracao {
 	
-	enum{Ffundecl_tesp_id_apar_param_fpar_compdecl} tipo;
-
 	struct{	Ttipoespecificador tesp;
 		char* id;
 		// parenteses não precisam ser armazenados ?
@@ -213,7 +201,7 @@ Tfundeclaracao fundecl_tesp_id_apar_param_fpar_compdecl(Ttipoespecificador tesp,
 
 struct AAparams {
 	
-	enum{Fparams_paramlista, Fparams_void, Fparams_vazio} tipo;
+	enum{Fparams_paramlista, Fparams_void} tipo;
 
 	union{	Tparamlista paramlist;
 		char* tvoid;
@@ -293,8 +281,6 @@ Tparam param_tesp_id_acol_fcol(Ttipoespecificador tesp, char* id);
 
 struct AAcompostodecl {
 	
-	enum{Fcompostodecl_achv_localdecl_statmlist_fchv} tipo;
-	
 	struct{	// colchetes devem ser ignorados?
 		Tlocaldeclaracoes localdecl;
 		Tstatementlista statementlist;
@@ -312,12 +298,10 @@ Tcompostodecl compostodecl_achv_localdecl_statmlist_fchv(Tlocaldeclaracoes local
 /* local-declarações -> local-declarações var-declaração | vazio */
 
 struct AAlocaldeclaracoes {
-	
-	enum{Flocaldecl_localdecl_vardecl, Flocaldecl_vazio} tipo;
-	
+
 	struct{	Tlocaldeclaracoes localdecl;
 		Tvardeclaracao vardecl;
-	} Tachv_localdecl_statmlist_fchv;
+	} Tachv_localdecl_vardecl;
 
 };
 
@@ -336,8 +320,6 @@ Tlocaldeclaracoes localdecl_vazio();
 /* statement-lista -> statement-lista statement | vazio */
 
 struct AAstatementlista {
-	
-	enum{Fstatmlist_statmlist_statm, Fstatmlist_vazio} tipo;
 	
 	struct{	Tstatementlista statementlist;
 		Tstatement statement;
@@ -399,8 +381,6 @@ Tstatement statm_retdecl(Tretornodecl retdecl);
 
 struct AAexpressaodecl {
 	
-	enum{Fexpdecl_exp_ptvirg, Fexpdecl_ptvirg} tipo;
-	
 	Texpressao exp; 
 
 };
@@ -453,8 +433,6 @@ Tselecaodecl seldecl_com_else(Texpressao exp, Tstatement statementif, Tstatement
 
 struct AAiteracaodecl {
 	
-	enum{Fitdecl_while_apar_exp_fpar_statm} tipo;
-	
 	struct{	// parenteses e "while" ignorados?	
 		Texpressao exp;
 		Tstatement statement;
@@ -473,9 +451,7 @@ Titeracaodecl itdecl_while_apar_exp_fpar_statm(Texpressao exp, Tstatement statem
 /* retorno-decl -> return ; | return expressão ; */
 
 struct AAretornodecl {
-	
-	enum{Fretdecl_sem_expressao, Fretdecl_com_expressao} tipo;
-	
+
 	// "return" e "ponto-e-vírgula" ignorados?
 	Texpressao exp;	 
 
@@ -580,29 +556,13 @@ Tsimplesexpressao simplexp_somaexp(Tsomaexpressao somaexp);
 
 struct AArelacional {
 	
-	enum{Frel_menorigual, Frel_menor, Frel_maior, Frel_maiorigual, Frel_igual, Frel_diferente} tipo;
-	/* todos estes operadores são ignorados? É sabido pelo método que é chamado? */
+	char* rel;
 
 };
 
 
-// relacional -> <=
-Trelacional rel_menorigual();
 
-// relacional -> <
-Trelacional rel_menor();
-
-// relacional -> >
-Trelacional rel_maior();
-
-// relacional -> >=
-Trelacional rel_maiorigual();
-
-// relacional -> ==
-Trelacional rel_igual();
-
-// relacional -> !=
-Trelacional rel_diferente();
+Trelacional relacional(char* rel);
 
 /* FIM - relacional -> <= | < | > | >= | == | != */
 
@@ -631,7 +591,7 @@ struct AAsomaexpressao {
 Tsomaexpressao somaexp_somaexp_soma_termo(Tsomaexpressao somaexp, Tsoma soma, Ttermo termo);
 
 // soma-expressão -> termo
-Tsomaexpressao simplexp_termo(Ttermo termo);
+Tsomaexpressao somaexp_termo(Ttermo termo);
 
 /* FIM - soma-expressão -> soma-expressão soma termo | termo */
 
@@ -641,17 +601,12 @@ Tsomaexpressao simplexp_termo(Ttermo termo);
 
 struct AAsoma {
 	
-	enum{Fsoma_mais, Fsoma_menos} tipo;
-	/* operadores ignorados? É sabido pelo método que é chamado? */
+	char op;
 
 };
 
 
-// soma -> +
-Tsoma soma_mais();
-
-// soma -> -
-Tsoma soma_menos();
+Tsoma soma(char op);
 
 /* FIM - soma -> + | - */
 
@@ -690,17 +645,11 @@ Ttermo termo_fator(Tfator fator);
 
 struct AAmult {
 	
-	enum{Fmult_mult, Fmult_div} tipo;
-	/* operadores ignorados? É sabido pelo método que é chamado? */
+	char op;
 
 };
 
-
-// mult -> *
-Tmult mult_mult();
-
-// mult -> /
-Tmult mult_div();
+Tmult mult(char op);
 
 /* FIM - mult -> * | / */
 
@@ -745,8 +694,6 @@ Tfator fator_string(char* str);
 
 struct AAativacao {
 	
-	enum{Fativacao_regra} tipo;
-	
 	struct{	char* id; 
 		Targs args;	
 	} Tid_apar_args_fpar; 
@@ -764,8 +711,6 @@ Tativacao ativacao_regra(char* id, Targs args);
 /* args -> arg-lista | vazio */
 
 struct AAargs {
-	
-	enum{Fargs_arglista, Fargs_vazio} tipo;
 	
 	Targlista arglista; 
 

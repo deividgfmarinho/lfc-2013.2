@@ -2,6 +2,11 @@
    Deivid Goes Farias Marinho
    201110005298
    Trabalho de LFC - Parte 02
+
+						ANALISADOR LÉXICO PARA A LINGUAGEM C-
+	 (baseado no livro de Kenneth C. Louden, só que aceita strings e comentários aninhados)
+
+
 */
 
 
@@ -14,10 +19,12 @@
 
 %{ 
 
+#include "estruturas.h"
+#include "sintatico.h"
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h>
-#include "sintatico.h"
+
 
 
 /* contador para controlar o total de aberturas e fechamentos de delimitadores de comentários de C- */ 
@@ -27,11 +34,15 @@ char* comentario;
 /* armazena o tamanho da cadeia de caracteres acima */
 int tamComentario = 0;
 %}
+
+
 NUM [0-9]+
 ID ([a-z]|[A-Z])+
 SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"{"|"}"
 %x STRING
 %x COMENTARIO
+
+
 %% 
 
 
