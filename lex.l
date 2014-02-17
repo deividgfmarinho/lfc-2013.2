@@ -52,7 +52,20 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 <STRING>([^"\\\n]|\\[nt"])*["] { 
 		   	BEGIN INITIAL;
 			
-			/* está retornando sem a aspa dupla no início! */
+			/* adiciona a aspa dupla no início! 
+			memmove(yytext + 1, yytext, strlen(yytext) + 1);
+			yytext[0] = '\"';  
+			yytext[strlen(yytext)] = '\0'; */
+			
+			/* remove a aspa dupla do final,
+			   deixando a string sem aspas */
+			yytext[strlen(yytext) - 1] = '\0';
+			
+			
+			/* ASSOCIA O VALOR A SER RETORNADO AO TIPO
+			   DEFINIDO NO sintatico.y.
+			   O método strdup faz uma cópia de um char* */
+			yylval.string = strdup(yytext);
 			return STRSTR;
                 }
 				
@@ -71,7 +84,17 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 			printf("ALERTA: STRING (POSSUI ESCAPE(S) NÃO RECONHECIDO(S)):   \"%s \n",yytext);
 
 
-			/* está retornando sem a aspa dupla no início! */
+			/* adiciona a aspa dupla no início! 
+			memmove(yytext + 1, yytext, strlen(yytext) + 1);
+			yytext[0] = '\"'; 
+			yytext[strlen(yytext)] = '\0'; */
+			
+			/* remove a aspa dupla do final,
+			   deixando a string sem aspas */
+			yytext[strlen(yytext) - 1] = '\0';
+			
+			
+			yylval.string = strdup(yytext);
 			return STRSTR;
 		}
 
@@ -144,7 +167,11 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 "while"		{ return WHILE;  }
 
 
-{NUM} 		{ return NUM;    }
+{NUM} 		{ /* ASSOCIA O VALOR A SER RETORNADO AO TIPO
+			   DEFINIDO NO sintatico.y.
+			   O método atoi converte um char* para int */
+			  yylval.inteiro = atoi(yytext);
+			  return NUM;    }
 
 "+"		{ return MAIS;   }
 "-"		{ return MENOS;  }
@@ -167,7 +194,8 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 "}"		{ return FECHACHAVES; } 
 
 
-{ID}		{ return ID;  }
+{ID}		{ yylval.string = strdup(yytext);
+			  return ID;  }
 
 
 
@@ -182,7 +210,8 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 			  //return error;
 			}
 
-[^{NUM}{ID}{SIMBOL}[:space:]\n\r]	{ printf("ERRO LÉXICO. SÍMBOLO   %s   NÃO É RECONHECIDO! \n",yytext); 
+[^{NUM}{ID}{SIMBOL}[:space:]\n\r\t]	{ if(strlen(yytext) > 0)
+										printf("ERRO LÉXICO. SÍMBOLO   %s   NÃO É RECONHECIDO! \n",yytext); 
 				  //return error;
 				}
 

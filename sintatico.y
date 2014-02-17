@@ -16,7 +16,6 @@
 
 #include "estruturas.h"
 #include "arvoreabstrata.h"
-#include <stdio.h>
 
 // Cria a função de erro
 void yyerror(char *s);

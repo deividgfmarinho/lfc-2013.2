@@ -76,7 +76,7 @@ typedef union YYSTYPE
 {
 
 /* Line 2068 of yacc.c  */
-#line 24 "sintatico.y"
+#line 29 "sintatico.y"
 
 	int inteiro; 
 	char* string;

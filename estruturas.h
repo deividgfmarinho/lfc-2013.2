@@ -53,7 +53,6 @@ typedef struct AAarglista *Targlista;
 /* programa -> declaracao-lista	*/
 
 struct AAprograma {
-	enum{Fprograma_declist} tipo;
 	Tdeclaracaolista declist;
 };
 
