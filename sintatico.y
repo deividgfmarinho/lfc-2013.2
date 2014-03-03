@@ -4,31 +4,32 @@
 /*
    Deivid Goes Farias Marinho
    201110005298
-   Trabalho de LFC - Parte 02
+   Trabalho de LFC - Parte 03
    
    
-						ANALISADOR SINTÁTICO PARA A LINGUAGEM C-
+				ANALISADOR SINTÁTICO E SEMÂNTICO PARA A LINGUAGEM C-
 	     (gramática adaptada do livro de Kenneth C. Louden para aceitar strings)
 
 		 
 */
 
 
-#include "estruturas.h"
+#include "semantico.c"
 #include "arvoreabstrata.h"
+#include "arvoreabstrata.c"
+#include "util.h"
 
-// Cria a função de erro
-void yyerror(char *s);
+
+Tprograma program;
 
 %}
-
 
 %expect 1
 
 
 %union{
 	int inteiro; 
-	char* string;
+	char* cstring;
 	Tprograma programa;
 	Tdeclaracaolista declaracaolista;
 	Tdeclaracao declaracao; 
@@ -50,11 +51,8 @@ void yyerror(char *s);
 	Tvar var; 
 	Tsimplesexpressao simplesexpressao; 
 	Trelacional relacional;
-	Tsomaexpressao somaexpressao;
 	Tsoma soma;
-	Ttermo termo;
 	Tmult mult;
-	Tfator fator;
 	Tativacao ativacao;
 	Targs args;
 	Targlista arglista;
@@ -91,8 +89,8 @@ void yyerror(char *s);
 %token FECHACHAVES
 
 %token <inteiro> NUM 
-%token <string> STRSTR
-%token <string> ID 	
+%token <cstring> STRSTR
+%token <cstring> ID 	
 
 %type <programa> PROGRAMA
 %type <declaracaolista> DECLARACAOLISTA
@@ -113,13 +111,10 @@ void yyerror(char *s);
 %type <retornodecl> RETORNODECL
 %type <expressao> EXPRESSAO
 %type <var> VAR 
-%type <simplesexpressao> SIMPLESEXPRESSAO 
+%type <simplesexpressao> SIMPLESEXPRESSAO SOMAEXPRESSAO TERMO FATOR
 %type <relacional> RELACIONAL
-%type <somaexpressao> SOMAEXPRESSAO
 %type <soma> SOMA
-%type <termo> TERMO
 %type <mult> MULT
-%type <fator> FATOR
 %type <ativacao> ATIVACAO
 %type <args> ARGS
 %type <arglista> ARGLISTA
@@ -131,7 +126,8 @@ void yyerror(char *s);
 %%
 
 
-PROGRAMA : 		DECLARACAOLISTA			{$$ = programa_declist($1);}
+PROGRAMA : 		DECLARACAOLISTA			{program = programa_declist($1);
+										 $$ = program;}
 ;
 
 
@@ -146,41 +142,41 @@ DECLARACAO :   		VARDECLARACAO			{$$ = decl_vardecl($1);}
 ;
 
 
-VARDECLARACAO :   	TIPOESPECIFICADOR ID PONTOEVIRGULA	{$$ = vardecl_tesp_id_ptvirg($1, $2);}
+VARDECLARACAO :   	TIPOESPECIFICADOR ID PONTOEVIRGULA	{$$ = vardecl_tesp_id($1, getSimbolo($2));}
 		      | TIPOESPECIFICADOR ID ABRECOLCHETE NUM FECHACOLCHETE PONTOEVIRGULA 	
-								{$$ = vardecl_tesp_id_acol_num_fcol_ptvirg($1, $2, $4);}
+								{$$ = vardecl_tesp_id_num($1, getSimbolo($2), $4);}
 ;
 
 
-TIPOESPECIFICADOR :   	INT				{$$ = tesp("int");}
-		      | VOID				{$$ = tesp("void");}
-		      | STR				{$$ = tesp("string");}
+TIPOESPECIFICADOR :   	INT				{$$ = Tint;}
+		      | VOID				{$$ = Tvoid;}
+		      | STR				{$$ = Tstring;}
 ;
 
 
 FUNDECLARACAO :   	TIPOESPECIFICADOR ID ABREPARENTESIS PARAMS FECHAPARENTESIS COMPOSTODECL	
-							{$$ = fundecl_tesp_id_apar_param_fpar_compdecl($1, $2, $4, $6);}
+							{$$ = fundecl_tesp_id_param_compdecl($1, getSimbolo($2), $4, $6);}
 ;
 
 
 PARAMS :   	PARAMLISTA				{$$ = params_paramlista($1);}
-	      | VOID					{$$ = params_void("void");}
+	      | VOID					{$$ = params_void();}
 	      | 					{$$ = params_vazio();}
 ;
 
 
-PARAMLISTA :   	PARAMLISTA VIRGULA PARAM		{$$ = paramlist_parlist_virg_param($1, $3);}
+PARAMLISTA :   	PARAMLISTA VIRGULA PARAM		{$$ = paramlist_parlist_param($1, $3);}
 	      | PARAM					{$$ = paramlist_param($1);}
 ;
 
 
-PARAM :   	TIPOESPECIFICADOR ID				{$$ = param_tesp_id($1, $2);}
-	      | TIPOESPECIFICADOR ID ABRECOLCHETE FECHACOLCHETE	{$$ = param_tesp_id_acol_fcol($1, $2);}
+PARAM :   	TIPOESPECIFICADOR ID				{$$ = param_sem_colchetes($1, getSimbolo($2));}
+	      | TIPOESPECIFICADOR ID ABRECOLCHETE FECHACOLCHETE	{$$ = param_com_colchetes($1, getSimbolo($2));}
 ;
 
 
 COMPOSTODECL :   	ABRECHAVES LOCALDECLARACOES STATEMENTLISTA FECHACHAVES	
-							{$$ = compostodecl_achv_localdecl_statmlist_fchv($2, $3);}
+							{$$ = compostodecl_regra($2, $3);}
 ;
 
 
@@ -202,8 +198,8 @@ STATEMENT :   	EXPRESSAODECL				{$$ = statm_expdecl($1);}
 ;
 
 
-EXPRESSAODECL :   	EXPRESSAO PONTOEVIRGULA		{$$ = expdecl_exp_ptvirg($1);}
-	      	      | PONTOEVIRGULA			{$$ = expdecl_ptvirg();}
+EXPRESSAODECL :   	EXPRESSAO PONTOEVIRGULA		{$$ = expdecl_exp($1);}
+	      	      | PONTOEVIRGULA			{$$ = expdecl_();}
 ;
 
 
@@ -215,7 +211,7 @@ SELECAODECL :   IF ABREPARENTESIS EXPRESSAO FECHAPARENTESIS STATEMENT
 
 
 ITERACAODECL :   WHILE ABREPARENTESIS EXPRESSAO FECHAPARENTESIS STATEMENT	
-							{$$ = itdecl_while_apar_exp_fpar_statm($3, $5);}
+							{$$ = itdecl_regra($3, $5);}
 ;
 
 
@@ -224,60 +220,60 @@ RETORNODECL :   RETURN PONTOEVIRGULA			{$$ = retdecl_sem_expressao();}
 ;
 
 
-EXPRESSAO :   	VAR ATRIBUICAO EXPRESSAO		{$$ = exp_var_atrib_exp($1, $3);}
+EXPRESSAO :   	VAR ATRIBUICAO EXPRESSAO		{$$ = exp_var_exp($1, $3);}
 	      | SIMPLESEXPRESSAO			{$$ = exp_simplexp($1);}
 ;
 
 
-VAR :   	ID					{$$ = var_id($1);}
-	      | ID ABRECOLCHETE EXPRESSAO FECHACOLCHETE	{$$ = var_id_acol_exp_fcol($1, $3);}
+VAR :   	ID					{$$ = var_id(getSimbolo($1));}
+	      | ID ABRECOLCHETE EXPRESSAO FECHACOLCHETE	{$$ = var_id_exp(getSimbolo($1), $3);}
 ;
 
 
 SIMPLESEXPRESSAO :   	SOMAEXPRESSAO RELACIONAL SOMAEXPRESSAO	
-							{$$ = simplexp_somaexp_rel_somaexp($1, $2, $3);}
-	      	      | SOMAEXPRESSAO			{$$ = simplexp_somaexp($1);}
+							{$$ = simplexp_simplexp_rel_simplexp($1, $2, $3);}
+	      	      | SOMAEXPRESSAO			{$$ = $1;}
 ;
 
 
-RELACIONAL :   	MENORIGUAL				{$$ = relacional("<=");}
-	      | MENOR					{$$ = relacional("<");}
-	      | MAIOR					{$$ = relacional(">");}
-	      | MAIORIGUAL				{$$ = relacional(">=");}
-	      | IGUAL					{$$ = relacional("==");}
-	      | DIFERENTE				{$$ = relacional("!=");}
+RELACIONAL :   	MENORIGUAL				{$$ = Tmenorigual;}
+	      | MENOR					{$$ = Tmenor;}
+	      | MAIOR					{$$ = Tmaior;}
+	      | MAIORIGUAL				{$$ = Tmaiorigual;}
+	      | IGUAL					{$$ = Tigual;}
+	      | DIFERENTE				{$$ = Tdiferente;}
 ;
 
 
-SOMAEXPRESSAO :   	SOMAEXPRESSAO SOMA TERMO	{$$ = somaexp_somaexp_soma_termo($1, $2, $3);}
-	      	      | TERMO				{$$ = somaexp_termo($1);}
+SOMAEXPRESSAO :   	SOMAEXPRESSAO SOMA TERMO	{$$ = simplexp_simplexp_soma_simplexp($1, $2, $3);}
+	      	      | TERMO				{$$ = $1;}
 ;
 
 
-SOMA :   	MAIS					{$$ = soma('+');}
-	      | MENOS					{$$ = soma('-');}
+SOMA :   	MAIS					{$$ = Tmais;}
+	      | MENOS					{$$ = Tmenos;}
 ;
 
 
-TERMO :   	TERMO MULT FATOR			{$$ = termo_termo_mult_fator($1, $2, $3);}
-	      | FATOR					{$$ = termo_fator($1);}
+TERMO :   	TERMO MULT FATOR			{$$ = simplexp_simplexp_mult_simplexp($1, $2, $3);}
+	      | FATOR					{$$ = $1;}
 ;
 
 
-MULT :   	ASTERISCO				{$$ = mult('*');}
-	      | BARRA					{$$ = mult('/');}
+MULT :   	ASTERISCO				{$$ = Tmul;}
+	      | BARRA					{$$ = Tdiv;}
 ;
 
 
-FATOR :   	ABREPARENTESIS EXPRESSAO FECHAPARENTESIS	{$$ = fator_apar_exp_fpar($2);}
-	      | VAR						{$$ = fator_var($1);}
-	      | ATIVACAO					{$$ = fator_ativacao($1);}
-	      | NUM						{$$ = fator_num($1);}
-	      | STRSTR						{$$ = fator_string($1);}
+FATOR :   	ABREPARENTESIS EXPRESSAO FECHAPARENTESIS	{$$ = simplexp_exp($2);}
+	      | VAR						{$$ = simplexp_var($1);}
+	      | ATIVACAO					{$$ = simplexp_ativacao($1);}
+	      | NUM						{$$ = simplexp_num($1);}
+	      | STRSTR						{$$ = simplexp_string($1);}
 ;
 
 
-ATIVACAO :   	ID ABREPARENTESIS ARGS FECHAPARENTESIS	{$$ = ativacao_regra($1, $3);}
+ATIVACAO :   	ID ABREPARENTESIS ARGS FECHAPARENTESIS	{$$ = ativacao_regra(getSimbolo($1), $3);}
 ;
 
 
@@ -286,7 +282,7 @@ ARGS :   	ARGLISTA				{$$ = args_arglista($1);}
 ;
 
 
-ARGLISTA :   	ARGLISTA VIRGULA EXPRESSAO		{$$ = arglista_arglista_virg_exp($1, $3);}
+ARGLISTA :   	ARGLISTA VIRGULA EXPRESSAO		{$$ = arglista_arglista_exp($1, $3);}
 	      | EXPRESSAO				{$$ = arglista_exp($1);}
 ;
 
@@ -296,15 +292,27 @@ ARGLISTA :   	ARGLISTA VIRGULA EXPRESSAO		{$$ = arglista_arglista_virg_exp($1, $
 #include <stdlib.h>
 #include <stdio.h>
 
-void yyerror(char *s)
+yyerror(char *s)
 {
-   fprintf(stderr,"Erro sintático.\n");
+   fprintf(stderr,"Erro sintatico\n");
    exit(1);
 }
 
 main(){	
 	
-  yyparse();
+	// faz a análise sintática, preenchendo
+	// a tabela de símbolos
+	int aux = yyparse();
 	
-  return 0;
+	// faz a análise semântica
+	if(!aux) 
+		semantica_programa(program);
+	
+	// destroi os simbolos
+	destroiSimbolos();
+	
+	// destrói a árvore abstrata
+	destroiArvore(program);
+	
+	return(0);
 }

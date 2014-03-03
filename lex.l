@@ -1,7 +1,7 @@
 /*
    Deivid Goes Farias Marinho
    201110005298
-   Trabalho de LFC - Parte 02
+   Trabalho de LFC - Parte 03
 
 						ANALISADOR LÉXICO PARA A LINGUAGEM C-
 	 (baseado no livro de Kenneth C. Louden, só que aceita strings e comentários aninhados)
@@ -19,18 +19,19 @@
 
 %{ 
 
-#include "estruturas.h"
-#include "sintatico.h"
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h>
+#include "arvoreabstrata.h"
+#include "util.h"
+#include "sintatico.h"
 
 
 
 /* contador para controlar o total de aberturas e fechamentos de delimitadores de comentários de C- */ 
 int cont = 0;
 /* cadeia de caracteres que armazena o valor do comentário de C- */
-char* comentario;
+string comentario;
 /* armazena o tamanho da cadeia de caracteres acima */
 int tamComentario = 0;
 %}
@@ -64,8 +65,8 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 			
 			/* ASSOCIA O VALOR A SER RETORNADO AO TIPO
 			   DEFINIDO NO sintatico.y.
-			   O método strdup faz uma cópia de um char* */
-			yylval.string = strdup(yytext);
+			   O método strdup faz uma cópia de um string */
+			yylval.cstring = strdup(yytext);
 			return STRSTR;
                 }
 				
@@ -73,15 +74,15 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 		   	BEGIN INITIAL;
 			/* "remove" o \n do final */
 			yytext[strlen(yytext) - 2] = '\0';
-			printf("ERRO LÉXICO. ERA ESPERADO O FECHAMENTO DAS ASPAS DUPLAS EM:   \"%s \n", yytext);
-			
-			//return error;
+
+			fprintf(stderr,"Erro lexico. Era esperado o fechamento das aspas duplas em:   \"%s \n", yytext);
+			exit(1);
                 }
 
 <STRING>([^"\\\n]|\\[nt"])*\\[^nt"]([^"\n])*["] {
 			BEGIN INITIAL;
 			
-			printf("ALERTA: STRING (POSSUI ESCAPE(S) NÃO RECONHECIDO(S)):   \"%s \n",yytext);
+			printf("Alerta: String possui escape(s) nao reconhecido(s):   \"%s \n",yytext);
 
 
 			/* adiciona a aspa dupla no início! 
@@ -94,7 +95,7 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 			yytext[strlen(yytext) - 1] = '\0';
 			
 			
-			yylval.string = strdup(yytext);
+			yylval.cstring = strdup(yytext);
 			return STRSTR;
 		}
 
@@ -104,22 +105,22 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 	  if(cont == 0){
 	    BEGIN COMENTARIO;
 	    tamComentario = 0;
-	    comentario = (char*) malloc(1 * sizeof(char));
+	    comentario = (string) malloc(1 * sizeof(char));
 	  }				 
 	  cont++;
 	  tamComentario += 2; 
-	  comentario = (char*) realloc(comentario, tamComentario * sizeof(char));
+	  comentario = (string) realloc(comentario, tamComentario * sizeof(char));
 	  strcat(comentario, "/*");
 	}
 	
 <COMENTARIO>"/*" { cont++;
 	  	   tamComentario += 2; 
-	  	   comentario = (char*) realloc(comentario, tamComentario * sizeof(char));
+	  	   comentario = (string) realloc(comentario, tamComentario * sizeof(char));
 	  	   strcat(comentario, "/*");
 		 }
 		 
 <COMENTARIO>"*/" { tamComentario += 2; 
-	           comentario = (char*) realloc(comentario, tamComentario * sizeof(char));
+	           comentario = (string) realloc(comentario, tamComentario * sizeof(char));
 	  	   strcat(comentario, "*/");
 		   if(cont > 0){
 	    	     cont--;
@@ -135,7 +136,7 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 		 }
 		 
 <COMENTARIO>.|\n|\r { tamComentario += strlen(yytext); 
-	              comentario = (char*) realloc(comentario, tamComentario * sizeof(char));
+	              comentario = (string) realloc(comentario, tamComentario * sizeof(char));
 		      strcat(comentario, yytext);
 		    }
 
@@ -143,12 +144,11 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 <<EOF>>		  { if(tamComentario > 0){
 
 		      if(cont == 1)
-			printf("ERRO LÉXICO. ERA ESPERADO O \"*/\" AO FINAL DE:   %s \n", comentario);
-
+			fprintf(stderr,"Erro lexico. Era esperado o \"*/\" ao final de:   %s \n", comentario);
 		      else
-			printf("ERRO LÉXICO. ERAM ESPERADOS %d \"*/\" AO FINAL DE:   %s \n", cont, comentario);			
-				
-		      //return error;       
+			fprintf(stderr,"Erro lexico. eram esperados %d \"*/\" ao final de:   %s \n", cont, comentario);
+			
+			exit(1);
 
 		    }
 
@@ -169,7 +169,7 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 
 {NUM} 		{ /* ASSOCIA O VALOR A SER RETORNADO AO TIPO
 			   DEFINIDO NO sintatico.y.
-			   O método atoi converte um char* para int */
+			   O método atoi converte um string para int */
 			  yylval.inteiro = atoi(yytext);
 			  return NUM;    }
 
@@ -194,7 +194,7 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 "}"		{ return FECHACHAVES; } 
 
 
-{ID}		{ yylval.string = strdup(yytext);
+{ID}		{ yylval.cstring = strdup(yytext);
 			  return ID;  }
 
 
@@ -202,17 +202,18 @@ SIMBOL "+"|"-"|"*"|"/"|"<"|"<="|">"|">="|"=="|"!="|"="|";"|","|"("|")"|"["|"]"|"
 
 
 
-{ID}{NUM}({ID}|{NUM})*	{ printf("ERRO LÉXICO. IDENTIFICADOR   %s   É INVÁLIDO! \n",yytext); 
-		  	  //return error;
+{ID}{NUM}({ID}|{NUM})*	{ fprintf(stderr,"Erro lexico. Identificador   %s   eh invalido! \n",yytext);
+						  exit(1);	
 			}
 
-{NUM}{ID}({ID}|{NUM})*	{ printf("ERRO LÉXICO. VALOR NÃO RECONHECIDO:   %s \n",yytext); 
-			  //return error;
+{NUM}{ID}({ID}|{NUM})*	{ fprintf(stderr,"Erro lexico. Valor nao reconhecido:   %s \n",yytext);
+						  exit(1);	
 			}
 
-[^{NUM}{ID}{SIMBOL}[:space:]\n\r\t]	{ if(strlen(yytext) > 0)
-										printf("ERRO LÉXICO. SÍMBOLO   %s   NÃO É RECONHECIDO! \n",yytext); 
-				  //return error;
+[^{NUM}{ID}{SIMBOL}[:space:]\n\r\t]	{ if(strlen(yytext) > 0){
+										fprintf(stderr,"Erro lexico. Simbolo   %s   nao eh reconhecido! \n",yytext);
+										exit(1);
+									  }	
 				}
 
 

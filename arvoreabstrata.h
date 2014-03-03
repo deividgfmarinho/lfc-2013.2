@@ -1,530 +1,802 @@
-#include <stdlib.h>
-#include "estruturas.h"
+#ifndef ARVOREABSTRATA_H
+#define ARVOREABSTRATA_H
+
+#include "simbolos.h"
+#include "util.h"
+
+
 
 
 /* 	
     Deivid Goes Farias Marinho
     201110005298
-    Trabalho LFC - Parte 02
+    Trabalho LFC - Parte 03
 
 
-	FUNÇÕES DAS ESTRUTURAS USADAS PARA A GRAMÁTICA LIVRE DE CONTEXTO PARA A LINGUAGEM C-
-	     (gramática adaptada do livro de Kenneth C. Louden para aceitar strings)
+			GRAMÁTICA ABSTRATA PARA A GRAMÁTICA DA LINGUAGEM C-
+	(gramática adaptada do livro de Kenneth C. Louden para aceitar strings)
 
-
+	Neste arquivo também estão contidos as assinaturas das funções para inserção dos nós.
 
 */
 
 
+/*
 
-// programa -> declaracao-lista */
-Tprograma programa_declist(Tdeclaracaolista declist){
-	Tprograma program = malloc(sizeof(*program));
-	program->declist = declist;
-	return program;
-}
+PROGRAMA : 		DECLARACAOLISTA			
+;
 
 
+	
+DECLARACAOLISTA :   	DECLARACAOLISTA DECLARACAO	
+		      | DECLARACAO		  	
+;
 
 
+DECLARACAO :   		VARDECLARACAO		
+		      | FUNDECLARACAO		  
+;
+
+
+VARDECLARACAO :   	TIPOESPECIFICADOR ID 
+		      | TIPOESPECIFICADOR ID NUM  	
+;
+
+
+FUNDECLARACAO :   	TIPOESPECIFICADOR ID PARAMS COMPOSTODECL	
+;
+
+
+PARAMS :   	PARAMLISTA				
+	      | VOID					
+	      | 					
+;
+
+
+PARAMLISTA :   	PARAMLISTA PARAM	
+	      | PARAM					
+;
+
+
+PARAM :   	TIPOESPECIFICADOR ID
+
+
+COMPOSTODECL :   	LOCALDECLARACOES STATEMENTLISTA
+;
+
+
+LOCALDECLARACOES :   	LOCALDECLARACOES VARDECLARACAO
+	      	      | 				
+;
+
+
+STATEMENTLISTA :   	STATEMENTLISTA STATEMENT	
+	      	      | 				
+;
+
+
+STATEMENT :   	EXPRESSAODECL				
+	      | COMPOSTODECL				
+	      | SELECAODECL				
+	      | ITERACAODECL				
+	      | RETORNODECL				
+;
+
+
+EXPRESSAODECL :   	EXPRESSAO 
+	      	      | 
+;
+
+
+SELECAODECL :   EXPRESSAO STATEMENT	
+	      | EXPRESSAO STATEMENT STATEMENT	
+;	
+
+
+ITERACAODECL :   EXPRESSAO STATEMENT	
+;
+
+
+RETORNODECL :   	
+	      | EXPRESSAO		
+;
+
+
+EXPRESSAO :   	VAR EXPRESSAO		
+	      | SIMPLESEXPRESSAO
+;
+
+
+VAR :   	ID				
+	      | ID EXPRESSAO	
+;
+
+
+SIMPLESEXPRESSAO :   	SIMPLESEXPRESSAO RELACIONAL SIMPLESEXPRESSAO		
+				  | SIMPLESEXPRESSAO SOMA SIMPLESEXPRESSAO	
+				  | SIMPLESEXPRESSAO MULT SIMPLESEXPRESSAO
+				  | EXPRESSAO	
+				  | VAR						
+				  | ATIVACAO		
+				  | NUM			
+				  | STRSTR 
+;
+
+
+RELACIONAL :   	
+;
+
+SOMA :   
+;
+
+MULT :   
+;
+
+
+ATIVACAO :   	ID ARGS 
+;
+
+
+ARGS :   	ARGLISTA				
+	      | 		  
+;
+
+
+ARGLISTA :   	ARGLISTA EXPRESSAO				
+	      | EXPRESSAO		  
+;
+
+*/
+
+
+typedef struct AAprograma *Tprograma;
+typedef struct AAdeclaracaolista *Tdeclaracaolista;
+typedef struct AAdeclaracao *Tdeclaracao;
+typedef struct AAvardeclaracao *Tvardeclaracao;
+typedef struct AAfundeclaracao *Tfundeclaracao;
+typedef struct AAparams *Tparams;
+typedef struct AAparamlista *Tparamlista;
+typedef struct AAparam *Tparam;
+typedef struct AAcompostodecl *Tcompostodecl;
+typedef struct AAlocaldeclaracoes *Tlocaldeclaracoes;
+typedef struct AAstatementlista *Tstatementlista;
+typedef struct AAstatement *Tstatement;
+typedef struct AAexpressaodecl *Texpressaodecl;
+typedef struct AAselecaodecl *Tselecaodecl;
+typedef struct AAiteracaodecl *Titeracaodecl;
+typedef struct AAretornodecl *Tretornodecl;
+typedef struct AAexpressao *Texpressao;
+typedef struct AAvar *Tvar;
+typedef struct AAsimplesexpressao *Tsimplesexpressao;
+typedef struct AAativacao *Tativacao;
+typedef struct AAargs *Targs;
+typedef struct AAarglista *Targlista;
+
+// Enumerações de tipos que não precisam ser estruturas
+typedef enum {Tint, Tvoid, Tstring, Tstrint} Ttipoespecificador;  // Tstrint : pode ser string ou int
+typedef enum {Tmenorigual, Tmenor, Tmaior, Tmaiorigual, Tigual, Tdiferente} Trelacional;
+typedef enum {Tmais, Tmenos} Tsoma;
+typedef enum {Tmul, Tdiv} Tmult;
+
+
+
+/* programa -> declaracao-lista	*/
+
+struct AAprograma {
+	Tdeclaracaolista declist;
+};
+
+Tprograma programa_declist(Tdeclaracaolista declist);
+
+/* FIM - programa	*/
+
+
+
+
+/* declaracao-lista -> declaracao-lista declaracao | declaracao	*/
+
+struct AAdeclaracaolista {
+	
+	enum{Fdeclist_declist_decl, Fdeclist_decl} tipo;
+
+	union{	struct{
+			Tdeclaracaolista declist;
+			Tdeclaracao decl;
+		} Tdeclistdec;
+		
+		Tdeclaracao decl;
+
+	} uniao;
+
+};
 
 // declaracao-lista -> declaracao-lista declaracao 
-Tdeclaracaolista declist_declist_decl(Tdeclaracaolista declist, Tdeclaracao decl){
-	Tdeclaracaolista dl = malloc(sizeof(*dl));
-	dl->tipo = Fdeclist_declist_decl;
-	dl->uniao.Tdeclistdec.declist = declist;
-	dl->uniao.Tdeclistdec.decl = decl;
-	return dl;
-}
-
+Tdeclaracaolista declist_declist_decl(Tdeclaracaolista declist, Tdeclaracao decl);
 
 // declaracao-lista -> declaracao 
-Tdeclaracaolista declist_decl(Tdeclaracao decl){
-	Tdeclaracaolista dl = malloc(sizeof(*dl));
-	dl->tipo = Fdeclist_decl;
-	dl->uniao.decl = decl;
-	return dl;
-}
+Tdeclaracaolista declist_decl(Tdeclaracao decl);
+
+/* FIM - declaracao-lista */
 
 
+
+
+/* declaracao -> var-declaracao | fun-declaracao */
+
+struct AAdeclaracao {
+	
+	enum{Fdecl_vardecl, Fdecl_fundecl} tipo;
+
+	union{	Tvardeclaracao vardecl; 
+		Tfundeclaracao fundecl;
+
+	} uniao;
+}; 
 
 
 // declaracao -> var-declaracao 
-Tdeclaracao decl_vardecl(Tvardeclaracao vardecl){
-	Tdeclaracao dec = malloc(sizeof(*dec));
-	dec->tipo = Fdecl_vardecl;
-	dec->uniao.vardecl = vardecl;
-	return dec;
-}
+Tdeclaracao decl_vardecl(Tvardeclaracao vardecl);
 
 // declaracao -> fun-declaracao 
-Tdeclaracao decl_fundecl(Tfundeclaracao fundecl){
-	Tdeclaracao dec = malloc(sizeof(*dec));
-	dec->tipo = Fdecl_fundecl;
-	dec->uniao.fundecl = fundecl;
-	return dec;
-}
+Tdeclaracao decl_fundecl(Tfundeclaracao fundecl);
+
+/* FIM - declaracao */
+
+
+
+/* var-declaracao -> tipo-especificador ID | tipo-especificador ID NUM */
+
+struct AAvardeclaracao{
+	
+	enum{Fvardecl_tesp_id, Fvardecl_tesp_id_num} tipo;
+
+	union{	struct{
+			Ttipoespecificador tesp;
+			Simbolo id;
+		} Ttesp_id; 
+
+		struct{
+			Ttipoespecificador tesp;
+			Simbolo id;
+			int num;
+		} Ttesp_id_num;
+
+	} uniao;
+};
+
+
+// var-declaracao -> tipo-especificador ID 
+Tvardeclaracao vardecl_tesp_id(Ttipoespecificador tesp, Simbolo id);
+
+// var-declaracao -> tipo-especificador ID NUM 
+Tvardeclaracao vardecl_tesp_id_num(Ttipoespecificador tesp, Simbolo id, int num);
+
+/* FIM - var-declaracao */
 
 
 
 
-// var-declaracao -> tipo-especificador ID ;
-Tvardeclaracao vardecl_tesp_id_ptvirg(Ttipoespecificador tesp, char* id){
-	Tvardeclaracao vdec = malloc(sizeof(*vdec));
-	vdec->tipo = Fvardecl_tesp_id_ptvirg;
-	vdec->uniao.T_tesp_id_ptvirg.tesp = tesp;
-	vdec->uniao.T_tesp_id_ptvirg.id = id;
-	return vdec;
-}
+/* fun-declaração -> tipo-especificador ID params composto-decl */
 
-// var-declaracao -> tipo-especificador ID [ NUM ] ;
-Tvardeclaracao vardecl_tesp_id_acol_num_fcol_ptvirg(Ttipoespecificador tesp, char* id, int num){
-	Tvardeclaracao vdec = malloc(sizeof(*vdec));
-	vdec->tipo = Fvardecl_tesp_id_acol_num_fcol_ptvirg;
-	vdec->uniao.T_tesp_id_acol_num_fcol_ptvirg.tesp = tesp;
-	vdec->uniao.T_tesp_id_acol_num_fcol_ptvirg.id = id;
-	vdec->uniao.T_tesp_id_acol_num_fcol_ptvirg.num = num;
-	return vdec;
-}
+struct AAfundeclaracao {
+	
+	struct{	Ttipoespecificador tesp;
+		Simbolo id;
+		Tparams params;
+		Tcompostodecl compdecl;
+	} Ttesp_id_param_compdecl;
+};
 
 
 
-// tipo-especificador -> int | void | string
-Ttipoespecificador tesp(char* tesp){
-	Ttipoespecificador tipo = malloc(sizeof(*tipo));
-	tipo->tesp = tesp;
-	return tipo;
-}
+Tfundeclaracao fundecl_tesp_id_param_compdecl(Ttipoespecificador tesp, Simbolo id, Tparams params, Tcompostodecl compdecl);
+
+/* FIM - fun-declaração */
 
 
 
-// fun-declaração -> tipo-especificador ID ( params ) composto-decl */
-Tfundeclaracao fundecl_tesp_id_apar_param_fpar_compdecl(Ttipoespecificador tesp, 
-							char* id, Tparams params, Tcompostodecl compdecl){
-	Tfundeclaracao funcao = malloc(sizeof(*funcao));
-	funcao->tesp_id_apar_param_fpar_compdecl.tesp = tesp;
-	funcao->tesp_id_apar_param_fpar_compdecl.params = params;
-	funcao->tesp_id_apar_param_fpar_compdecl.compdecl = compdecl;
-	return funcao;					
-}
+
+/* params -> param-lista | void |  */
+
+struct AAparams {
+	
+	enum{Fparams_parlist, Fparams_vazio} tipo;
+	
+	Tparamlista paramlist;
+
+};
 
 
 
 // params -> param-lista
-Tparams params_paramlista(Tparamlista paramlist){
-	Tparams params = malloc(sizeof(*params));
-	params->tipo = Fparams_paramlista;
-	params->uniao.paramlist = paramlist;
-	return params;
-}
+Tparams params_paramlista(Tparamlista paramlist);
 
 // params -> void
-Tparams params_void(char* tvoid){
-	Tparams params = malloc(sizeof(*params));
-	params->tipo = Fparams_void;
-	params->uniao.tvoid = tvoid;
-	return params;
-}
+Tparams params_void();
 
-// params -> vazio
-Tparams params_vazio(){
-	Tparams params = malloc(sizeof(*params));
-	// nothing...
-	return params;
-}
+// params -> 
+Tparams params_vazio();
+
+/* FIM - params */
 
 
 
-// param-lista -> param-lista, param
-Tparamlista paramlist_parlist_virg_param(Tparamlista paramlist, Tparam param){
-	Tparamlista plist = malloc(sizeof(*plist));
-	plist->tipo = Fparamlist_parlist_virg_param;
-	plist->uniao.Tparlist_virg_param.paramlist = paramlist;
-	plist->uniao.Tparlist_virg_param.param = param;
-	return plist;
-}
+
+/* param-lista -> param-lista param  | param */
+
+struct AAparamlista {
+	
+	enum{Fparamlist_parlist_param, Fparamlist_param} tipo;
+	
+	union{	struct{	Tparamlista paramlist;
+			Tparam param;
+		} Tparlist_param;
+
+		Tparam param;
+	} uniao;
+};
+
+
+// param-lista -> param-lista param
+Tparamlista paramlist_parlist_param(Tparamlista paramlist, Tparam param);
 
 // param-lista -> param
-Tparamlista paramlist_param(Tparam param){
-	Tparamlista plist = malloc(sizeof(*plist));
-	plist->tipo = Fparamlist_param;
-	plist->uniao.param = param;
-	return plist;
-}
+Tparamlista paramlist_param(Tparam param);
 
+/* FIM - param-lista -> param-lista param  | param */
+
+
+
+
+/* param -> tipo-especificador ID | tipo-especificador ID */
+
+struct AAparam{
+	
+	enum{Fparam_sem_colchetes, Fparam_com_colchetes} tipo;
+	
+	// Só precisa de uma estrutura, mas de dois construtores diferentes
+  	// apesar de armazenarem sempre os mesmos argumentos
+	struct{	Ttipoespecificador tesp;
+		Simbolo id;
+	
+	} Ttesp_id;
+};
 
 
 // param -> tipo-especificador ID
-Tparam param_tesp_id(Ttipoespecificador tesp, char* id){
-	Tparam param = malloc(sizeof(*param));
-	param->Ttesp_id.tesp = tesp;
-	param->Ttesp_id.id = id;
-	return param;
-}
+Tparam param_sem_colchetes(Ttipoespecificador tesp, Simbolo id);
 
-// param -> tipo-especificador ID []
-Tparam param_tesp_id_acol_fcol(Ttipoespecificador tesp, char* id){
-	Tparam param = malloc(sizeof(*param));
-	param->Ttesp_id.tesp = tesp;
-	param->Ttesp_id.id = id;
-	return param;
-}
+// param -> tipo-especificador ID
+Tparam param_com_colchetes(Ttipoespecificador tesp, Simbolo id);
+
+/* FIM - param-lista */
 
 
 
-// composto-decl -> { local-declarações statement-lista } */
-Tcompostodecl compostodecl_achv_localdecl_statmlist_fchv(Tlocaldeclaracoes localdecl, Tstatementlista statementlist){
-	Tcompostodecl compdecl = malloc(sizeof(*compdecl));
-	compdecl->Tachv_localdecl_statmlist_fchv.localdecl = localdecl;
-	compdecl->Tachv_localdecl_statmlist_fchv.statementlist = statementlist;
-	return compdecl;
-}
 
+/* composto-decl -> local-declarações statement-lista */
+
+struct AAcompostodecl {
+	
+	struct{	
+		Tlocaldeclaracoes localdecl;
+		Tstatementlista statementlist;
+	} Tlocaldecl_statmlist;
+};
+
+
+Tcompostodecl compostodecl_regra(Tlocaldeclaracoes localdecl, Tstatementlista statementlist);
+
+/* FIM - composto-decl */
+
+
+
+
+/* local-declarações -> local-declarações var-declaração | vazio */
+
+struct AAlocaldeclaracoes {
+
+	enum{Flocdecl_locdecl_vardecl, Flocdecl_vazio} tipo;
+
+	struct{	Tlocaldeclaracoes localdecl;
+		Tvardeclaracao vardecl;
+	} Tlocaldecl_vardecl;
+
+};
 
 
 // local-declarações -> local-declarações var-declaração
-Tlocaldeclaracoes localdecl_localdecl_vardecl(Tlocaldeclaracoes localdecl, Tvardeclaracao vardecl){
-	Tlocaldeclaracoes locdecl = malloc(sizeof(*locdecl));
-	locdecl->Tachv_localdecl_vardecl.localdecl = localdecl;
-	locdecl->Tachv_localdecl_vardecl.vardecl = vardecl;
-	return localdecl;
-}
+Tlocaldeclaracoes localdecl_localdecl_vardecl(Tlocaldeclaracoes localdecl, Tvardeclaracao vardecl);
 
 // local-declarações -> vazio
-Tlocaldeclaracoes localdecl_vazio(){
-	Tlocaldeclaracoes locdecl = malloc(sizeof(*locdecl));
-	// nothing . . .
-	return locdecl;
-}
+Tlocaldeclaracoes localdecl_vazio();
+
+/* FIM - local-declarações */
+
+
+
+
+/* statement-lista -> statement-lista statement | vazio */
+
+struct AAstatementlista {
+	
+	enum{Fstatm_statmlist_statm, Fstatm_vazio} tipo;
+	
+	struct{	Tstatementlista statementlist;
+		Tstatement statement;
+	
+	} Tstatmlist_statm;
+
+};
 
 
 // statement-lista -> statement-lista statement
-Tstatementlista statmlist_statmlist_statm(Tstatementlista statementlist, Tstatement statement){
-	Tstatementlista statmlist = malloc(sizeof(*statmlist));
-	statmlist->Tstatmlist_statm.statementlist = statementlist; 
-	statmlist->Tstatmlist_statm.statement = statement; 
-	return statmlist;
-}
+Tstatementlista statmlist_statmlist_statm(Tstatementlista statementlist, Tstatement statement);
 
-// statement-lista -> vazio
-Tstatementlista statmlist_vazio(){
-	Tstatementlista statmlist = malloc(sizeof(*statmlist));
-	// nothing . . .
-	return statmlist;
-}
+// statement-lista -> 
+Tstatementlista statmlist_vazio();
 
+/* FIM - statement-lista -> statement-lista statement |  */
+
+
+
+/* statement -> expressão-decl | composto-decl | seleção-decl | iteração-decl | retorno-decl */
+
+struct AAstatement {
+	
+	enum{Fstatm_expdecl, Fstatm_compdecl, Fstatm_seldecl, Fstatm_itdecl, Fstatm_retdecl} tipo;
+	
+	union{	Texpressaodecl expdecl; 
+		Tcompostodecl compdecl; 
+		Tselecaodecl seldecl; 
+		Titeracaodecl itdecl; 
+		Tretornodecl retdecl;
+	
+	} uniao;
+
+};
 
 
 // statement -> expressão-decl
-Tstatement statm_expdecl(Texpressaodecl expdecl){
-	Tstatement statm = malloc(sizeof(*statm));
-	statm->tipo = Fstatm_expdecl;
-	statm->uniao.expdecl = expdecl;
-	return statm;
-}
+Tstatement statm_expdecl(Texpressaodecl expdecl);
 
 // statement -> composto-decl
-Tstatement statm_compdecl(Tcompostodecl compdecl){
-	Tstatement statm = malloc(sizeof(*statm));
-	statm->tipo = Fstatm_compdecl;
-	statm->uniao.compdecl = compdecl;
-	return statm;
-}
+Tstatement statm_compdecl(Tcompostodecl compdecl);
 
 // statement -> seleção-decl
-Tstatement statm_seldecl(Tselecaodecl seldecl){
-	Tstatement statm = malloc(sizeof(*statm));
-	statm->tipo = Fstatm_compdecl;
-	statm->uniao.seldecl = seldecl;
-	return statm;
-}
+Tstatement statm_seldecl(Tselecaodecl seldecl);
 
 // statement -> iteração-decl
-Tstatement statm_itdecl(Titeracaodecl itdecl){
-	Tstatement statm = malloc(sizeof(*statm));
-	statm->tipo = Fstatm_itdecl;
-	statm->uniao.itdecl = itdecl;
-	return statm;
-}
+Tstatement statm_itdecl(Titeracaodecl itdecl);
 
 // statement -> retorno-decl
-Tstatement statm_retdecl(Tretornodecl retdecl){
-	Tstatement statm = malloc(sizeof(*statm));
-	statm->tipo = Fstatm_retdecl;
-	statm->uniao.retdecl = retdecl;
-	return statm;
-}
+Tstatement statm_retdecl(Tretornodecl retdecl);
 
-
-
-// expressão-decl -> expressão ;
-Texpressaodecl expdecl_exp_ptvirg(Texpressao exp){
-	Texpressaodecl expdecl = malloc(sizeof(*expdecl));
-	expdecl->exp = exp;
-	return expdecl;
-}
-
-// expressão-decl -> ;
-Texpressaodecl expdecl_ptvirg(){
-	Texpressaodecl expdecl = malloc(sizeof(*expdecl));
-	// nada a armazenar
-	return expdecl;
-}
-
-
-
-// seleção-decl -> if ( expressão ) statement
-Tselecaodecl seldecl_sem_else(Texpressao exp, Tstatement statement){
-	Tselecaodecl seldecl = malloc(sizeof(*seldecl));
-	seldecl->tipo = Fseldecl_sem_else;
-	seldecl->uniao.Tif_sem_else.exp = exp;
-	seldecl->uniao.Tif_sem_else.statement = statement;
-	return seldecl;
-}
-
-// seleção-decl -> if ( expressão ) statement else statement
-Tselecaodecl seldecl_com_else(Texpressao exp, Tstatement statementif, Tstatement statementelse){
-	Tselecaodecl seldecl = malloc(sizeof(*seldecl));
-	seldecl->tipo = Fseldecl_com_else;
-	seldecl->uniao.Tif_com_else.exp = exp;
-	seldecl->uniao.Tif_com_else.statementif = statementif;
-	seldecl->uniao.Tif_com_else.statementelse = statementelse;
-	return seldecl;
-}
-
-
-
-// iteração-decl -> while ( expressão ) statement 
-Titeracaodecl itdecl_while_apar_exp_fpar_statm(Texpressao exp, Tstatement statement){
-	Titeracaodecl itdecl = malloc(sizeof(*itdecl));
-	itdecl->Twhile_apar_exp_fpar_statm.exp = exp;
-	itdecl->Twhile_apar_exp_fpar_statm.statement = statement;
-	return itdecl;
-}
+/* FIM - statement */
 
 
 
 
-// retorno-decl -> return ;
-Tretornodecl retdecl_sem_expressao(){
-	Tretornodecl retdecl = malloc(sizeof(*retdecl));
-	// nada a armazenar
-	return retdecl;
-}
 
-// return expressão ;
-Tretornodecl retdecl_com_expressao(Texpressao exp){
-	Tretornodecl retdecl = malloc(sizeof(*retdecl));
-	retdecl->exp = exp;
-	return retdecl;
-}
+/* expressão-decl -> expressão |  */
 
+struct AAexpressaodecl {
+	
+	enum{Fexpdecl_exp, Fexpdecl_vazio} tipo;
+	
+	Texpressao exp; 
+
+};
+
+
+// expressão-decl -> expressão 
+Texpressaodecl expdecl_exp(Texpressao exp);
+
+// expressão-decl -> 
+Texpressaodecl expdecl_();
+
+/* FIM - expressão-decl */
+
+
+
+/* seleção-decl -> expressão statement | expressão statement statement */
+
+struct AAselecaodecl {
+	
+	enum{Fseldecl_sem_else, Fseldecl_com_else} tipo;
+	
+	union{	struct{		
+			Texpressao exp;
+			Tstatement statement;
+		} Tif_sem_else;
+
+		struct{	
+			Texpressao exp;
+			Tstatement statementif;
+			Tstatement statementelse;
+		} Tif_com_else;
+		
+	} uniao;	 
+
+};
+
+
+// seleção-decl -> expressão statement
+Tselecaodecl seldecl_sem_else(Texpressao exp, Tstatement statement);
+
+// seleção-decl -> expressão statement statement
+Tselecaodecl seldecl_com_else(Texpressao exp, Tstatement statementif, Tstatement statementelse);
+
+/* FIM - seleção-decl */
+
+
+
+
+/* iteração-decl -> expressão statement */
+
+struct AAiteracaodecl {
+	
+	struct{	
+		Texpressao exp;
+		Tstatement statement;
+		
+	} Texp_statm;	 
+
+};
+
+
+Titeracaodecl itdecl_regra(Texpressao exp, Tstatement statement);
+
+/* FIM - iteração-decl  */
+
+
+
+/* retorno-decl -> | expressão */
+
+struct AAretornodecl {
+
+	enum{Fretdecl_, Fretdecl_exp} tipo;
+	
+	Texpressao exp;	 
+
+};
+
+
+// retorno-decl -> 
+Tretornodecl retdecl_sem_expressao();
+
+// retorno-decl -> expressão 
+Tretornodecl retdecl_com_expressao(Texpressao exp);
+
+/* FIM - retorno-decl */
+
+
+
+/* expressão -> var expressão | simples-expressão */
+
+struct AAexpressao {
+	
+	enum{Fexp_var_exp, Fexp_simplexp} tipo;
+	
+	union{	struct{	Tvar var;
+			Texpressao exp;
+		} Tvar_exp;
+
+		Tsimplesexpressao simplexp;
+		
+	} uniao; 
+
+};
 
 
 // expressão -> var = expressão
-Texpressao exp_var_atrib_exp(Tvar var, Texpressao exp){
-	Texpressao expressao = malloc(sizeof(*expressao));
-	expressao->tipo = Fexp_var_atrib_exp;
-	expressao->uniao.Tvar_atrib_exp.var = var;
-	expressao->uniao.Tvar_atrib_exp.exp = exp;
-	return expressao;
-}
+Texpressao exp_var_exp(Tvar var, Texpressao exp);
 
 // expressão -> simples-expressão
-Texpressao exp_simplexp(Tsimplesexpressao simplexp){
-	Texpressao expressao = malloc(sizeof(*expressao));
-	expressao->tipo = Fexp_simplexp;
-	expressao->uniao.simplexp = simplexp;
-	return expressao;
-}
+Texpressao exp_simplexp(Tsimplesexpressao simplexp);
 
+/* FIM - expressão -> var = expressão | simples-expressão */
+
+
+
+/* var -> ID | ID expressão */
+
+struct AAvar {
+	
+	enum{Fvar_id, Fvar_id_exp} tipo;
+	
+	union{	Simbolo id;
+		struct{	Simbolo id;
+			Texpressao exp;
+		} Tid_exp;
+		
+	} uniao; 
+
+};
 
 
 // var -> ID
-Tvar var_id(char* id){
-	Tvar var = malloc(sizeof(*var));
-	var->tipo = Fvar_id;
-	var->uniao.id = id;
-	return var;
-}
+Tvar var_id(Simbolo id);
 
-// var -> ID [ expressão ]
-Tvar var_id_acol_exp_fcol(char* id, Texpressao exp){
-	Tvar var = malloc(sizeof(*var));
-	var->tipo = Fvar_id_acol_exp_fcol;
-	var->uniao.Tid_acol_exp_fcol.id = id;
-	var->uniao.Tid_acol_exp_fcol.exp = exp;
-	return var;
-}
+// var -> ID expressão
+Tvar var_id_exp(Simbolo id, Texpressao exp);
+
+/* FIM - var -> ID | ID expressão */
 
 
 
-// simples-expressão -> soma-expressão relacional soma-expressão
-Tsimplesexpressao simplexp_somaexp_rel_somaexp(Tsomaexpressao somaexp1, Trelacional rel, Tsomaexpressao somaexp2){
-	Tsimplesexpressao simplexp = malloc(sizeof(*simplexp));
-	simplexp->tipo = Fsimplexp_somaexp_rel_somaexp;
-	simplexp->uniao.TTsomaexp_rel_somexp.somaexp1 = somaexp1;
-	simplexp->uniao.TTsomaexp_rel_somexp.rel = rel;
-	simplexp->uniao.TTsomaexp_rel_somexp.somaexp2 = somaexp2;
-	return simplexp;
-}
+/* simples-expressão -> simples-expressão relacional simples-expressão		
+					  | simples-expressão soma simples-expressão	
+					  | simples-expressão mult simples-expressão
+					  | expressão	
+					  | var				
+					  | ativação		
+					  | num			
+					  | stringValue    */
 
-// simples-expressão -> soma-expressão 
-Tsimplesexpressao simplexp_somaexp(Tsomaexpressao somaexp){
-	Tsimplesexpressao simplexp = malloc(sizeof(*simplexp));
-	simplexp->tipo = Fsimplexp_somaexp;
-	simplexp->uniao.somaexp = somaexp;
-	return simplexp;
-}
+struct AAsimplesexpressao {
+	
+	enum{Fsimplexp_simplexp_rel_simplexp, 
+		 Fsimplexp_simplexp_soma_simplexp,
+		 Fsimplexp_simplexp_mult_simplexp,
+		 Fsimplexp_exp,
+		 Fsimplexp_var,
+		 Fsimplexp_ativacao,
+		 Fsimplexp_num,
+		 Fsimplexp_str} tipo;
+	
+	union{	struct{	Tsimplesexpressao simplexp1;
+			Trelacional rel;
+			Tsimplesexpressao simplexp2;
+		} Tsimplexp_rel_simplexp;
+		
+		struct{	Tsimplesexpressao simplexp1;
+			Tsoma soma;
+			Tsimplesexpressao simplexp2;
+		} Tsimplexp_soma_simplexp;
+		
+		struct{	Tsimplesexpressao simplexp1;
+			Tmult mult;
+			Tsimplesexpressao simplexp2;
+		} Tsimplexp_mult_simplexp;
+		
+		Texpressao exp; 
+		
+		Tvar var;
+		
+		Tativacao ativacao; 
+		
+		int num;
+		
+		string str;	
+		
+	} uniao; 
 
-
-
-// relacional -> <= | < | > | >= | == | !=
-Trelacional relacional(char* rel){
-	Trelacional oprel = malloc(sizeof(*oprel));
-	oprel->rel = rel;
-	return oprel;
-}
-
-
-
-// soma-expressão -> soma-expressão soma termo
-Tsomaexpressao somaexp_somaexp_soma_termo(Tsomaexpressao somaexp, Tsoma soma, Ttermo termo){
-	Tsomaexpressao sexp = malloc(sizeof(*sexp));
-	sexp->tipo = Fsomaexp_somaexp_soma_termo;
-	sexp->uniao.TTsomaexp_rel_somexp.somaexp = somaexp;
-	sexp->uniao.TTsomaexp_rel_somexp.soma = soma;
-	sexp->uniao.TTsomaexp_rel_somexp.termo = termo;
-	return sexp;
-}
-
-// soma-expressão -> termo
-Tsomaexpressao somaexp_termo(Ttermo termo){
-	Tsomaexpressao sexp = malloc(sizeof(*sexp));
-	sexp->tipo = Fsimplexp_termo;
-	sexp->uniao.termo = termo;
-	return sexp;
-}
-
-
-// soma -> + | -
-Tsoma soma(char op){
-	Tsoma soma = malloc(sizeof(*soma));
-	soma->op = op;
-	return soma;
-}
+}; 
 
 
+// simples-expressão -> simples-expressão relacional simples-expressão
+Tsimplesexpressao simplexp_simplexp_rel_simplexp(Tsimplesexpressao simplexp1, Trelacional rel, Tsimplesexpressao simplexp2);
 
-// termo -> termo mult fator
-Ttermo termo_termo_mult_fator(Ttermo termo, Tmult mult, Tfator fator){
-	Ttermo term = malloc(sizeof(*term));
-	term->tipo = Ftermo_termo_mult_fator;
-	term->uniao.Ttermo_mult_fator.termo = termo;
-	term->uniao.Ttermo_mult_fator.mult = mult;
-	term->uniao.Ttermo_mult_fator.fator = fator;
-	return term;
-}
+// simples-expressão -> simples-expressão soma simples-expressão
+Tsimplesexpressao simplexp_simplexp_soma_simplexp(Tsimplesexpressao simplexp1, Tsoma soma, Tsimplesexpressao simplexp2);
 
-// termo -> fator
-Ttermo termo_fator(Tfator fator){
-	Ttermo term = malloc(sizeof(*term));
-	term->tipo = Ftermo_fator;
-	term->uniao.fator = fator;
-	return term;
-}
+// simples-expressão -> simples-expressão mult simples-expressão
+Tsimplesexpressao simplexp_simplexp_mult_simplexp(Tsimplesexpressao simplexp1, Tmult mult, Tsimplesexpressao simplexp2);
 
+// simples-expressão -> expressão
+Tsimplesexpressao simplexp_exp(Texpressao exp);
 
+// simples-expressão -> var
+Tsimplesexpressao simplexp_var(Tvar var);
 
-// mult -> * | /
-Tmult mult(char op){
-	Tmult mult = malloc(sizeof(*mult));
-	mult->op = op;
-	return mult;
-}
+// simples-expressão -> ativação
+Tsimplesexpressao simplexp_ativacao(Tativacao ativacao);
+
+// simples-expressão -> NUM
+Tsimplesexpressao simplexp_num(int num);
+
+// simples-expressão -> stringValue
+Tsimplesexpressao simplexp_string(string str);
+
+/* FIM - simples-expressão */
 
 
 
-// fator -> ( expressão )
-Tfator fator_apar_exp_fpar(Texpressao exp){
-	Tfator fator = malloc(sizeof(*fator));
-	fator->tipo = Ffator_apar_exp_fpar;
-	fator->uniao.exp = exp;
-	return fator;
-}
 
-// fator -> var
-Tfator fator_var(Tvar var){
-	Tfator fator = malloc(sizeof(*fator));
-	fator->tipo = Ffator_var;
-	fator->uniao.var = var;
-	return fator;
-}
 
-// fator -> ativação
-Tfator fator_ativacao(Tativacao ativacao){
-	Tfator fator = malloc(sizeof(*fator));
-	fator->tipo = Ffator_ativacao;
-	fator->uniao.ativacao = ativacao;
-	return fator;
-}
+/* ativação -> ID args */
 
-// fator -> NUM
-Tfator fator_num(int num){
-	Tfator fator = malloc(sizeof(*fator));
-	fator->tipo = Ffator_num;
-	fator->uniao.num = num;
-	return fator;
-}
+struct AAativacao {
+	
+	struct{	Simbolo id; 
+		Targs args;	
+	} Tid_args; 
 
-// fator -> STRING
-Tfator fator_string(char* str){
-	Tfator fator = malloc(sizeof(*fator));
-	fator->tipo = Ffator_string;
-	fator->uniao.str = str;
-	return fator;
-}
+};
+
+
+Tativacao ativacao_regra(Simbolo id, Targs args);
+
+/* FIM - ativação */
 
 
 
-// ativação -> ID ( args ) */
-Tativacao ativacao_regra(char* id, Targs args){
-	Tativacao ativacao = malloc(sizeof(*ativacao));
-	ativacao->Tid_apar_args_fpar.id = id;
-	ativacao->Tid_apar_args_fpar.args = args;
-	return ativacao;
-}
 
+/* args -> arg-lista | */
+
+struct AAargs {
+	
+	enum{Fargs_arglist, Fargs_vazio} tipo;
+	
+	Targlista arglista; 
+
+};
 
 
 // args -> arg-lista
-Targs args_arglista(Targlista arglista){
-	Targs args = malloc(sizeof(*args));
-	args->arglista = arglista;
-	return args;
-}
+Targs args_arglista(Targlista arglista);
 
-// args -> vazio
-Targs args_vazio(){
-	Targs args = malloc(sizeof(*args));
-	// nothing ...
-	return args;
-}
+// args -> 
+Targs args_vazio();
+
+/* FIM - args */
 
 
-// arg-lista -> arg-lista, expressão
-Targlista arglista_arglista_virg_exp(Targlista arglista, Texpressao exp){
-	Targlista alist = malloc(sizeof(*alist));
-	alist->tipo = Farglista_arglista_virg_exp;
-	alist->uniao.Targlista_virg_exp.arglista = arglista;
-	alist->uniao.Targlista_virg_exp.exp = exp;
-	return alist;
-}
+
+/* arg-lista -> arg-lista expressão | expressão */
+
+struct AAarglista {
+	
+	enum{Farglista_arglista_exp, Farglista_exp} tipo;
+	
+	union{	struct{	Targlista arglista;
+			Texpressao exp;
+		} Targlista_exp; 
+		Texpressao exp;	
+	} uniao; 
+
+};
+
+
+// arg-lista -> arg-lista expressão
+Targlista arglista_arglista_exp(Targlista arglista, Texpressao exp);
 
 // arg-lista -> expressão
-Targlista arglista_exp(Texpressao exp){
-	Targlista alist = malloc(sizeof(*alist));
-	alist->tipo = Farglista_exp;
-	alist->uniao.exp = exp;
-	return alist;
-}
+Targlista arglista_exp(Texpressao exp);
+
+/* FIM - arglista */
+
+
+
+
+
+
+// destrui a árvore
+void destroiArvore(Tprograma programa);
+void destroiDecList(Tdeclaracaolista declist);
+void destroiDecl(Tdeclaracao decl);
+void destroiVarDecl(Tvardeclaracao vardecl);
+void destroiFunDecl(Tfundeclaracao fundecl);
+void destroiParams(Tparams params);
+void destroiParamList(Tparamlista paramlist);
+void destroiParam(Tparam param);
+void destroiCompDecl(Tcompostodecl compdecl);
+void destroiLocalDecl(Tlocaldeclaracoes localdecl);
+void destroiStatmList(Tstatementlista statementlist);
+void destroiStatm(Tstatement statement);
+void destroiExpDecl(Texpressaodecl expdecl);
+void destroiSelDecl(Tselecaodecl seldecl);
+void destroiItDecl(Titeracaodecl itdecl);
+void destroiRetDecl(Tretornodecl retdecl);
+void destroiExp(Texpressao exp);
+void destroiVar(Tvar var);
+void destroiSimplExp(Tsimplesexpressao simplexp);
+void destroiAtivacao(Tativacao ativacao);
+void destroiArgs(Targs args);
+void destroiArgList(Targlista arglista);
+
+
+
+
+#endif
