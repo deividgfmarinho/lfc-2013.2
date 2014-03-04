@@ -96,10 +96,10 @@ Tvardeclaracao vardecl_tesp_id_num(Ttipoespecificador tesp, Simbolo id, int num)
 Tfundeclaracao fundecl_tesp_id_param_compdecl(Ttipoespecificador tesp, 
 							Simbolo id, Tparams params, Tcompostodecl compdecl){
 	Tfundeclaracao funcao = malloc(sizeof(*funcao));
-	funcao->Ttesp_id_param_compdecl.tesp = tesp;
-	funcao->Ttesp_id_param_compdecl.id = id;
-	funcao->Ttesp_id_param_compdecl.params = params;
-	funcao->Ttesp_id_param_compdecl.compdecl = compdecl;
+	funcao->tesp = tesp;
+	funcao->id = id;
+	funcao->params = params;
+	funcao->compdecl = compdecl;
 	return funcao;					
 }
 
@@ -151,8 +151,8 @@ Tparamlista paramlist_param(Tparam param){
 Tparam param_sem_colchetes(Ttipoespecificador tesp, Simbolo id){
 	Tparam param = malloc(sizeof(*param));
 	param->tipo = Fparam_sem_colchetes;
-	param->Ttesp_id.tesp = tesp;
-	param->Ttesp_id.id = id;
+	param->tesp = tesp;
+	param->id = id;
 	return param;
 }
 
@@ -160,8 +160,8 @@ Tparam param_sem_colchetes(Ttipoespecificador tesp, Simbolo id){
 Tparam param_com_colchetes(Ttipoespecificador tesp, Simbolo id){
 	Tparam param = malloc(sizeof(*param));
 	param->tipo = Fparam_com_colchetes;
-	param->Ttesp_id.tesp = tesp;
-	param->Ttesp_id.id = id;
+	param->tesp = tesp;
+	param->id = id;
 	return param;
 }
 
@@ -170,8 +170,8 @@ Tparam param_com_colchetes(Ttipoespecificador tesp, Simbolo id){
 // composto-decl -> local-declarações statement-lista */
 Tcompostodecl compostodecl_regra(Tlocaldeclaracoes localdecl, Tstatementlista statementlist){
 	Tcompostodecl compdecl = malloc(sizeof(*compdecl));
-	compdecl->Tlocaldecl_statmlist.localdecl = localdecl;
-	compdecl->Tlocaldecl_statmlist.statementlist = statementlist;
+	compdecl->localdecl = localdecl;
+	compdecl->statementlist = statementlist;
 	return compdecl;
 }
 
@@ -181,8 +181,8 @@ Tcompostodecl compostodecl_regra(Tlocaldeclaracoes localdecl, Tstatementlista st
 Tlocaldeclaracoes localdecl_localdecl_vardecl(Tlocaldeclaracoes localdecl, Tvardeclaracao vardecl){
 	Tlocaldeclaracoes locdecl = malloc(sizeof(*locdecl));
 	locdecl->tipo = Flocdecl_locdecl_vardecl;
-	locdecl->Tlocaldecl_vardecl.localdecl = localdecl;
-	locdecl->Tlocaldecl_vardecl.vardecl = vardecl;
+	locdecl->localdecl = localdecl;
+	locdecl->vardecl = vardecl;
 	return locdecl;
 }
 
@@ -199,8 +199,8 @@ Tlocaldeclaracoes localdecl_vazio(){
 Tstatementlista statmlist_statmlist_statm(Tstatementlista statementlist, Tstatement statement){
 	Tstatementlista statmlist = malloc(sizeof(*statmlist));
 	statmlist->tipo = Fstatm_statmlist_statm;
-	statmlist->Tstatmlist_statm.statementlist = statementlist; 
-	statmlist->Tstatmlist_statm.statement = statement; 
+	statmlist->statementlist = statementlist; 
+	statmlist->statement = statement; 
 	return statmlist;
 }
 
@@ -298,8 +298,8 @@ Tselecaodecl seldecl_com_else(Texpressao exp, Tstatement statementif, Tstatement
 // iteração-decl -> expressão statement 
 Titeracaodecl itdecl_regra(Texpressao exp, Tstatement statement){
 	Titeracaodecl itdecl = malloc(sizeof(*itdecl));
-	itdecl->Texp_statm.exp = exp;
-	itdecl->Texp_statm.statement = statement;
+	itdecl->exp = exp;
+	itdecl->statement = statement;
 	return itdecl;
 }
 
@@ -437,8 +437,8 @@ Tsimplesexpressao simplexp_string(string str){
 // ativação -> ID args */
 Tativacao ativacao_regra(Simbolo id, Targs args){
 	Tativacao ativacao = malloc(sizeof(*ativacao));
-	ativacao->Tid_args.id = id;
-	ativacao->Tid_args.args = args;
+	ativacao->id = id;
+	ativacao->args = args;
 	return ativacao;
 }
 
@@ -546,9 +546,9 @@ void destroiFunDecl(Tfundeclaracao fundecl){
 	if(fundecl == NULL)
 		return;
 	
-	fundecl->Ttesp_id_param_compdecl.id = NULL;
-	destroiParams(fundecl->Ttesp_id_param_compdecl.params);
-	destroiCompDecl(fundecl->Ttesp_id_param_compdecl.compdecl);
+	fundecl->id = NULL;
+	destroiParams(fundecl->params);
+	destroiCompDecl(fundecl->compdecl);
 	
 	free(fundecl);
 	
@@ -591,7 +591,7 @@ void destroiParam(Tparam param){
 	if(param == NULL)
 		return;
 	
-	param->Ttesp_id.id = NULL;
+	param->id = NULL;
 	
 	free(param);
 }
@@ -604,9 +604,9 @@ void destroiCompDecl(Tcompostodecl compdecl){
 	if(compdecl == NULL)
 		return;
 	
-	destroiLocalDecl(compdecl->Tlocaldecl_statmlist.localdecl);
+	destroiLocalDecl(compdecl->localdecl);
 	
-	destroiStatmList(compdecl->Tlocaldecl_statmlist.statementlist);
+	destroiStatmList(compdecl->statementlist);
 	
 	free(compdecl);
 }
@@ -621,8 +621,8 @@ void destroiLocalDecl(Tlocaldeclaracoes localdecl){
 		return;
 	
 	if(localdecl->tipo == Flocdecl_locdecl_vardecl){
-		destroiLocalDecl(localdecl->Tlocaldecl_vardecl.localdecl);
-		destroiVarDecl(localdecl->Tlocaldecl_vardecl.vardecl);
+		destroiLocalDecl(localdecl->localdecl);
+		destroiVarDecl(localdecl->vardecl);
 	}
 	
 	free(localdecl);
@@ -636,8 +636,8 @@ void destroiStatmList(Tstatementlista statementlist){
 		return;
 	
 	if(statementlist->tipo == Fstatm_statmlist_statm){
-		destroiStatmList(statementlist->Tstatmlist_statm.statementlist);
-		destroiStatm(statementlist->Tstatmlist_statm.statement);
+		destroiStatmList(statementlist->statementlist);
+		destroiStatm(statementlist->statement);
 	}
 	
 	free(statementlist);
@@ -706,9 +706,9 @@ void destroiItDecl(Titeracaodecl itdecl){
 	if(itdecl == NULL)
 		return;
 	
-	destroiExp(itdecl->Texp_statm.exp);
+	destroiExp(itdecl->exp);
 	
-	destroiStatm(itdecl->Texp_statm.statement);
+	destroiStatm(itdecl->statement);
 	
 	free(itdecl);
 	
@@ -798,9 +798,9 @@ void destroiAtivacao(Tativacao ativacao){
 	if(ativacao == NULL)
 		return;
 	
-	ativacao->Tid_args.id = NULL;
+	ativacao->id = NULL;
 	
-	destroiArgs(ativacao->Tid_args.args);
+	destroiArgs(ativacao->args);
 	
 	free(ativacao);
 }

@@ -301,14 +301,14 @@ yyerror(char *s)
 main(){	
 	
 	// faz a análise sintática, preenchendo
-	// a tabela de símbolos
+	// a tabela de strings
 	int aux = yyparse();
 	
 	// faz a análise semântica
 	if(!aux) 
 		semantica_programa(program);
 	
-	// destroi os simbolos
+	// destrói os símbolos
 	destroiSimbolos();
 	
 	// destrói a árvore abstrata

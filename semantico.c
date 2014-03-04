@@ -631,16 +631,16 @@ void semantica_fundecl(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, T
 	//  Nao ha chamadas recursivas.
 	
 	// Verifica se o ID da funcao ainda esta no ambiente
-	if(procuraSimboloNoAmbiente(ambiente_funcoes, fundecl->Ttesp_id_param_compdecl.id) != NULL){
+	if(procuraSimboloNoAmbiente(ambiente_funcoes, fundecl->id) != NULL){
 		fprintf(stderr,"Erro semantico. Funcao '%s' redeclarada!\n", 
-				getIdentificadorDoSimbolo(fundecl->Ttesp_id_param_compdecl.id));
+				getIdentificadorDoSimbolo(fundecl->id));
 		destroiGeracaoDeCodigo();   
 		exit(1);
 	}
 	
 	// Cria o binder e adiciona na tabela do ambiente
-	addBinder(ambiente_funcoes, fundecl->Ttesp_id_param_compdecl.id, 
-			  binding_tipo_funcao(fundecl->Ttesp_id_param_compdecl.tesp, NULL, FALSE));
+	addBinder(ambiente_funcoes, fundecl->id, 
+			  binding_tipo_funcao(fundecl->tesp, NULL, FALSE));
 	
 	// Uma variavel declarada dentro de uma funcao (isto tambem inclui os parametros) sobrepõe a global de mesmo nome
 	
@@ -659,18 +659,18 @@ void semantica_fundecl(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, T
 	
 
 	// adiciona a função na estrutura da geração de código
-	string funID = traduzNomeDaFuncao(getIdentificadorDoSimbolo(fundecl->Ttesp_id_param_compdecl.id));
+	string funID = traduzNomeDaFuncao(getIdentificadorDoSimbolo(fundecl->id));
 
 	
-	addFuncao(pascal_funcao(funID, fundecl->Ttesp_id_param_compdecl.tesp));
+	addFuncao(pascal_funcao(funID, fundecl->tesp));
 	
 	
 	
 	// verifica a semantica dos parametros
-	semantica_params(ambiente_variaveis, ambiente_funcoes, fundecl->Ttesp_id_param_compdecl.params);
+	semantica_params(ambiente_variaveis, ambiente_funcoes, fundecl->params);
 	
 	// verifica a semantica do bloco
-	semantica_compdecl(ambiente_variaveis, ambiente_funcoes, fundecl->Ttesp_id_param_compdecl.compdecl, FALSE);
+	semantica_compdecl(ambiente_variaveis, ambiente_funcoes, fundecl->compdecl, FALSE);
 	
 	// Valida se tem retorno no mesmo nível léxico da função principal
 	analisaRetornoDaFuncaoCorrente(ambiente_funcoes);
@@ -715,17 +715,17 @@ void semantica_paramlist(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes,
 void semantica_param(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, Tparam param){
 	
 	// Verifica se o ID do parametro ja foi declarado no escopo
-	if(ambienteContemSimboloNoEscopo(ambiente_variaveis, param->Ttesp_id.id)){
+	if(ambienteContemSimboloNoEscopo(ambiente_variaveis, param->id)){
 		fprintf(stderr,"Erro semantico. Parametro '%s' redeclarado!\n", 
-				getIdentificadorDoSimbolo(param->Ttesp_id.id));
+				getIdentificadorDoSimbolo(param->id));
 		destroiGeracaoDeCodigo();   
 		exit(1);
 	}
 	
 	// Nao é possível declarar o tipo de uma parametro como void
-	if(param->Ttesp_id.tesp == Tvoid){
+	if(param->tesp == Tvoid){
 		fprintf(stderr,"Erro semantico. Parametro '%s' nao pode ser do tipo void!\n", 
-				getIdentificadorDoSimbolo(param->Ttesp_id.id));
+				getIdentificadorDoSimbolo(param->id));
 		destroiGeracaoDeCodigo();   
 		exit(1);
 	}
@@ -734,8 +734,8 @@ void semantica_param(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, Tpa
 	if(param->tipo == Fparam_sem_colchetes){
 		
 		// cria o binder e adiciona na tabela do ambiente
-		addBinder(ambiente_variaveis, param->Ttesp_id.id, 
-				  binding_tipo_simples(param->Ttesp_id.tesp));
+		addBinder(ambiente_variaveis, param->id, 
+				  binding_tipo_simples(param->tesp));
 		
 		// registra os tipos de cada parametro
 		Binder funcaoCorrente = ambiente_funcoes->topoDaPilha;
@@ -743,18 +743,18 @@ void semantica_param(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, Tpa
 		Tbindingtipos binding = (Tbindingtipos) funcaoCorrente->valor;
 		
 		// associa no binding da funcao o tipo do argumento
-		binding->uniao.Ttipofuncao.argumentoAnterior = binding_tipo_funcao(param->Ttesp_id.tesp, 
+		binding->uniao.Ttipofuncao.argumentoAnterior = binding_tipo_funcao(param->tesp, 
 																   binding->uniao.Ttipofuncao.argumentoAnterior, FALSE);
 		
 		// adiciona o parâmetro na estrutura da geração de código
-		addParametroNaFuncaoCorrente(pascal_variavel_simples(traduzNomeDaVariavel(getIdentificadorDoSimbolo(param->Ttesp_id.id)), 
-															 param->Ttesp_id.tesp));
+		addParametroNaFuncaoCorrente(pascal_variavel_simples(traduzNomeDaVariavel(getIdentificadorDoSimbolo(param->id)), 
+															 param->tesp));
 		
 	}else if(param->tipo == Fparam_com_colchetes){
 
 		// cria o binder e adiciona na tabela do ambiente
-		addBinder(ambiente_variaveis, param->Ttesp_id.id,
-				  binding_tipo_lista(param->Ttesp_id.tesp, -1)); // -1 se refere a uma lista de tamanho nao especificado
+		addBinder(ambiente_variaveis, param->id,
+				  binding_tipo_lista(param->tesp, -1)); // -1 se refere a uma lista de tamanho nao especificado
 		
 		// registra os tipos de cada parametro
 		Binder funcaoCorrente = ambiente_funcoes->topoDaPilha;
@@ -762,12 +762,12 @@ void semantica_param(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, Tpa
 		Tbindingtipos binding = (Tbindingtipos) funcaoCorrente->valor;
 		
 		// associa no binding da funcao o tipo do argumento
-		binding->uniao.Ttipofuncao.argumentoAnterior = binding_tipo_funcao(param->Ttesp_id.tesp, 
+		binding->uniao.Ttipofuncao.argumentoAnterior = binding_tipo_funcao(param->tesp, 
 																   binding->uniao.Ttipofuncao.argumentoAnterior, TRUE);
 		
 		// adiciona o parâmetro na estrutura da geração de código
-		addParametroNaFuncaoCorrente(pascal_variavel_lista(traduzNomeDaVariavel(getIdentificadorDoSimbolo(param->Ttesp_id.id)),
-														   param->Ttesp_id.tesp, 0));
+		addParametroNaFuncaoCorrente(pascal_variavel_lista(traduzNomeDaVariavel(getIdentificadorDoSimbolo(param->id)),
+														   param->tesp, 0));
 	}
 	
 }
@@ -792,9 +792,9 @@ void semantica_compdecl(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, 
 	}
 	
 
-	semantica_localdecl(ambiente_variaveis, compdecl->Tlocaldecl_statmlist.localdecl);
+	semantica_localdecl(ambiente_variaveis, compdecl->localdecl);
 	
-	semantica_statementlist(ambiente_variaveis, ambiente_funcoes, compdecl->Tlocaldecl_statmlist.statementlist);
+	semantica_statementlist(ambiente_variaveis, ambiente_funcoes, compdecl->statementlist);
 	
 	finalDeEscopo(ambiente_variaveis);
 	
@@ -823,9 +823,9 @@ void semantica_localdecl(Ambiente ambiente_variaveis, Tlocaldeclaracoes localdec
 		
 		inicioDeBloco = FALSE;
 		
-		semantica_localdecl(ambiente_variaveis, localdecl->Tlocaldecl_vardecl.localdecl);
+		semantica_localdecl(ambiente_variaveis, localdecl->localdecl);
 		
-		semantica_vardecl(ambiente_variaveis, localdecl->Tlocaldecl_vardecl.vardecl);
+		semantica_vardecl(ambiente_variaveis, localdecl->vardecl);
 
 	}else
 		inicioDeBloco = FALSE;
@@ -840,9 +840,9 @@ void semantica_statementlist(Ambiente ambiente_variaveis, Ambiente ambiente_func
 	
 	if(statementlist->tipo == Fstatm_statmlist_statm){ 
 		
-		semantica_statementlist(ambiente_variaveis, ambiente_funcoes, statementlist->Tstatmlist_statm.statementlist);
+		semantica_statementlist(ambiente_variaveis, ambiente_funcoes, statementlist->statementlist);
 		
-		semantica_statement(ambiente_variaveis, ambiente_funcoes, statementlist->Tstatmlist_statm.statement);
+		semantica_statement(ambiente_variaveis, ambiente_funcoes, statementlist->statement);
 		
 	}
 }
@@ -1000,9 +1000,9 @@ void semantica_itdecl(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, Ti
 	
 	addStatementNaFuncaoCorrente(pascal_statement(getStatementIdentado("while(")));
 	
-	Tbindingtipos expressao = semantica_exp(ambiente_variaveis, ambiente_funcoes, itdecl->Texp_statm.exp);
+	Tbindingtipos expressao = semantica_exp(ambiente_variaveis, ambiente_funcoes, itdecl->exp);
 		
-	// deve-se analisar o valor da expressao
+	// deve-se analisar o valor da expressão
 	if( (expressao->tipo == Ftiposimples && expressao->uniao.tipo != Tint) ||
 		(expressao->tipo == Ftipofuncao && expressao->uniao.Ttipofuncao.tipo != Tint) ){
 			fprintf(stderr,"Erro semantico. Expressao condicional do 'while' eh invalida!!\n");
@@ -1017,7 +1017,7 @@ void semantica_itdecl(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, Ti
 	
 	identacao += 4;
 	
-	semantica_statement(ambiente_variaveis, ambiente_funcoes, itdecl->Texp_statm.statement);
+	semantica_statement(ambiente_variaveis, ambiente_funcoes, itdecl->statement);
 	
 	identacao -= 4;
 	
@@ -1053,9 +1053,7 @@ void semantica_retdecl(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, T
 	
 		//Ttipoespecificador tipoDaFuncao = ((Tbindingtipos) funcaoCorrente->valor)->uniao.Ttipofuncao.tipo;
 		
-		// O tipo da expressao de retorno deve ser o mesmo do da funcao corrente
-		//if( (expressao->tipo == Ftiposimples && expressao->uniao.tipo != tipoDaFuncao) ||
-		//	(expressao->tipo == Ftipofuncao && expressao->uniao.Ttipofuncao.tipo != tipoDaFuncao) ){
+		// O tipo da expressão de retorno deve ser o mesmo do da funcao corrente
 		if(expressao->tipo == Ftipolista ||  !tiposSaoCompativeis(bindingFuncao, expressao)){
 			fprintf(stderr,"Erro semantico. Tipo retornado nao corresponde ao tipo da funcao '%s'!\n",
 					funcaoCorrente->simbol->nome);
@@ -1086,7 +1084,7 @@ void semantica_retdecl(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, T
 		
 		Ttipoespecificador tipoDaFuncao = ((Tbindingtipos) funcaoCorrente->valor)->uniao.Ttipofuncao.tipo;
 		
-		// return ;  só pode se referir a uma funcao do tipo void
+		// return ;  só pode se referir a uma função do tipo void
 		if(tipoDaFuncao != Tvoid){
 			fprintf(stderr,"Erro semantico. Tipo retornado nao corresponde ao tipo da funcao '%s'!\n",
 					funcaoCorrente->simbol->nome);
@@ -1112,11 +1110,11 @@ Tbindingtipos semantica_exp(Ambiente ambiente_variaveis, Ambiente ambiente_funco
 	
 	if(exp->tipo == Fexp_var_exp){
 		
-		// atribuicao é uma operacao booleana
+		// atribuição é uma operacao booleana
 		
 		Tbindingtipos bindingVar = semantica_var(ambiente_variaveis, ambiente_funcoes, exp->uniao.Tvar_exp.var);
 		
-		// Verificacao pois alguma falha pode ter acontecido que o tipo de var nao foi corretamente alocado
+		// Verificação, pois alguma falha pode ter acontecido que o tipo de var nao foi corretamente alocado
 		if(bindingVar->uniao.tipo == Tvoid){
 			fprintf(stderr,"Erro semantico. Tipo 'void' nao recebe valores!\n");
 			destroiGeracaoDeCodigo();   
@@ -1136,7 +1134,6 @@ Tbindingtipos semantica_exp(Ambiente ambiente_variaveis, Ambiente ambiente_funco
 			exit(1);
 		}
 		
-		//return bindingExp;
 		return binding_tipo_simples(Tint); // atribuição que dá certo tem retorno do tipo inteiro
 		
 	}
@@ -1397,24 +1394,24 @@ Tbindingtipos semantica_simplexp(Ambiente ambiente_variaveis, Ambiente ambiente_
   */
 Tbindingtipos semantica_ativacao(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, Tativacao ativacao){
 	
-	Tbindingtipos bindingFuncao = procuraSimboloNoAmbiente(ambiente_funcoes, ativacao->Tid_args.id);
+	Tbindingtipos bindingFuncao = procuraSimboloNoAmbiente(ambiente_funcoes, ativacao->id);
 	
 	if(bindingFuncao == NULL){
 		fprintf(stderr,"Erro semantico. Funcao '%s' nao declarada!\n",
-				getIdentificadorDoSimbolo(ativacao->Tid_args.id));
+				getIdentificadorDoSimbolo(ativacao->id));
 		destroiGeracaoDeCodigo();   
 		exit(1);
 	}
 	
 
 
-	adicionaStatementDeChamadaDeFuncao(ambiente_variaveis, ambiente_funcoes, getIdentificadorDoSimbolo(ativacao->Tid_args.id));
+	adicionaStatementDeChamadaDeFuncao(ambiente_variaveis, ambiente_funcoes, getIdentificadorDoSimbolo(ativacao->id));
 	
 
-	Tbindingtipos bindingArgs = semantica_args(ambiente_variaveis, ambiente_funcoes, ativacao->Tid_args.args);
+	Tbindingtipos bindingArgs = semantica_args(ambiente_variaveis, ambiente_funcoes, ativacao->args);
 	
 	
-	Ttipoespecificador tipoDaFuncao = analisaChamadaDeFuncao(getIdentificadorDoSimbolo(ativacao->Tid_args.id), 
+	Ttipoespecificador tipoDaFuncao = analisaChamadaDeFuncao(getIdentificadorDoSimbolo(ativacao->id), 
 															 (Tbindingtipos) bindingFuncao, bindingArgs);
 	
 	

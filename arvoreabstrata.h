@@ -280,11 +280,11 @@ Tvardeclaracao vardecl_tesp_id_num(Ttipoespecificador tesp, Simbolo id, int num)
 
 struct AAfundeclaracao {
 	
-	struct{	Ttipoespecificador tesp;
-		Simbolo id;
-		Tparams params;
-		Tcompostodecl compdecl;
-	} Ttesp_id_param_compdecl;
+	Ttipoespecificador tesp;
+	Simbolo id;
+	Tparams params;
+	Tcompostodecl compdecl;
+
 };
 
 
@@ -356,10 +356,9 @@ struct AAparam{
 	
 	// Só precisa de uma estrutura, mas de dois construtores diferentes
   	// apesar de armazenarem sempre os mesmos argumentos
-	struct{	Ttipoespecificador tesp;
-		Simbolo id;
-	
-	} Ttesp_id;
+	Ttipoespecificador tesp;
+	Simbolo id;
+
 };
 
 
@@ -378,10 +377,9 @@ Tparam param_com_colchetes(Ttipoespecificador tesp, Simbolo id);
 
 struct AAcompostodecl {
 	
-	struct{	
-		Tlocaldeclaracoes localdecl;
-		Tstatementlista statementlist;
-	} Tlocaldecl_statmlist;
+	Tlocaldeclaracoes localdecl;
+	Tstatementlista statementlist;
+
 };
 
 
@@ -398,9 +396,8 @@ struct AAlocaldeclaracoes {
 
 	enum{Flocdecl_locdecl_vardecl, Flocdecl_vazio} tipo;
 
-	struct{	Tlocaldeclaracoes localdecl;
-		Tvardeclaracao vardecl;
-	} Tlocaldecl_vardecl;
+	Tlocaldeclaracoes localdecl;
+	Tvardeclaracao vardecl;
 
 };
 
@@ -422,10 +419,8 @@ struct AAstatementlista {
 	
 	enum{Fstatm_statmlist_statm, Fstatm_vazio} tipo;
 	
-	struct{	Tstatementlista statementlist;
-		Tstatement statement;
-	
-	} Tstatmlist_statm;
+	Tstatementlista statementlist;
+	Tstatement statement;
 
 };
 
@@ -536,11 +531,9 @@ Tselecaodecl seldecl_com_else(Texpressao exp, Tstatement statementif, Tstatement
 
 struct AAiteracaodecl {
 	
-	struct{	
-		Texpressao exp;
-		Tstatement statement;
-		
-	} Texp_statm;	 
+	Texpressao exp;
+	
+	Tstatement statement;	 
 
 };
 
@@ -709,9 +702,9 @@ Tsimplesexpressao simplexp_string(string str);
 
 struct AAativacao {
 	
-	struct{	Simbolo id; 
-		Targs args;	
-	} Tid_args; 
+	Simbolo id; 
+	
+	Targs args;	
 
 };
 
