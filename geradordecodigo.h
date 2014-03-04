@@ -65,26 +65,31 @@ Pstatements pascal_statement(string statement);
 
 
 
-
-
-// estrutura do programa
+// Estrutura do programa
 string nomeDoPrograma;
 Pvariaveis variaveisGlobais;  // as da main também entram aqui
 Pfuncoes funcoes; // funções e procedimentos
 
 
-// se não existir, cria um novo
+
+
+
+// Construção da estrutura da geração
 void addVariavelGlobal(Pvariaveis variavel);
 void addFuncao(Pfuncoes funcao);
 void addParametroNaFuncaoCorrente(Pvariaveis argumento);
 bool variavelEstaNaFuncaoCorrente(string id);
 void addVariavelNaFuncaoCorrente(Pvariaveis variavel);
+void addStatementAnteriorDaFuncaoCorrente(Pstatements statement);
 bool addStatementNaFuncaoCorrente(Pstatements statement);
 string getVariavelDaAtribuicao();
 string getFuncaoDeAtivacao(int *posArg);
 
 
-// util
+// Util
+void print(string text);
+int getTotalCasasDecimais(int num);
+void replaceSubstring(string str, string sub, string new);
 string traduzTipo(Ttipoespecificador tipo);
 string traduzRelacional(Trelacional rel);
 string traduzSoma(Tsoma soma);
@@ -92,13 +97,17 @@ string traduzMult(Tmult mult);
 string traduzString(string str);
 string traduzNomeDaFuncao(string funcao);
 string traduzNomeDaVariavel(string variavel);
-bool compareInsensitiveStrings(string str1, string str2);
-void replaceSubstring(string str, string sub, string new);
 
 
 
-void inicializaEstruturaDaGeracao();				
+// Geração de código
+void inicializaEstruturaDaGeracao();
+void destroiVariaveis(Pvariaveis variaveis);	
+void destroiGeracaoDeCodigo();			
 void geraCodigo(string nomeDoArquivo);
 void escreveArquivo();
+void escreveVariaveis(Pvariaveis variavel);
 void escreveVariaveisGlobais();
+void escreveArgumentos(Pvariaveis argumentos);
+void escreveStatements(Pstatements statements);
 void escreveFuncoes();

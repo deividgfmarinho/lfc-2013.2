@@ -66,56 +66,10 @@ Pstatements pascal_statement(string statement){
 
 
 
-/**
-  * Recupera um tipo definido. Se não foi, o define e o retorna.
-  */
-/*Ptipos getTipo(int tamanho, Ttipoespecificador tipo){
-	
-	Ptipos t;
-	Ptipos tAnterior = NULL;
-	int cont = 1;
-	
-	for(t = tiposNecessarios; t != NULL; t = t->proximoTipo){
-		cont++;
-		tAnterior = t;
-		if (t->tamanho == tamanho && t->tipo == tipo) 
-			return t;
-	}
-	
-	string id;
-	
-	// Como os argumentos de C não determinam o valor
-	// e as variáveis declaradas tem valor fixo de 
-	// elementos do vetor, set tamanho = 0 e defina
-	// um tipo que vai dar erro na compilação do arquivo
-	// pascal, para que o usuário modifique isso manualmente
-	if(tamanho == 0){
-		
-		id = (string) malloc(7 * sizeof(char));
-		
-		strcpy(id, "vetArg");
-		
-		if(tipo == Tint)
-			strcat(id, "I"); // integer
-		else
-			strcat(id, "S"); // string
-		
-	}else{
-		
-		id = (string) malloc((3 + getTotalCasasDecimais(cont)) * sizeof(char));
 
-		sprintf(id, "vet%d", cont);
-	}
-	
-	t = pascal_define_tipo(id, tamanho, tipo, NULL);
-	
-	if(tAnterior != NULL)
-		tAnterior->proximoTipo = t;
-	else
-		tiposNecessarios = t;
-	
-	return t;
-} */
+
+
+/*      Construção da estrutura da geração      */
 
 
 /**
@@ -164,7 +118,7 @@ void addFuncao(Pfuncoes funcao){
 
 
 /**
-  * Adiciona um statement na função corrente
+  * Adiciona um parâmetro na função corrente
   */
 void addParametroNaFuncaoCorrente(Pvariaveis argumento){
 	
@@ -193,22 +147,6 @@ void addParametroNaFuncaoCorrente(Pvariaveis argumento){
 	
 }
 
-
-/**
-  * Procura pela variável nas variáveis globais
-  *//*
-bool variavelEhGlobal(string id){
-	
-	Pvariaveis v = variaveisGlobais;
-		
-	for(; v != NULL && strcmp(v->identificador, id) != 0; v = v->proximaVariavel)
-		;
-		
-	if(v == NULL)
-		return FALSE;
-	
-	return TRUE;
-} */
 
 /**
   * Procura pela variável na função corrente
@@ -296,7 +234,7 @@ void addVariavelNaFuncaoCorrente(Pvariaveis variavel){
 /**
   * Adiciona um statement anterior a última inserida
   */
-void addNoStatementAnteriorDaFuncaoCorrente(Pstatements statement){
+void addStatementAnteriorDaFuncaoCorrente(Pstatements statement){
 	
 	if(funcoes == NULL)
 		return;
@@ -330,7 +268,7 @@ void addNoStatementAnteriorDaFuncaoCorrente(Pstatements statement){
   * Adiciona um statement na função corrente
   *
   * Retorna TRUE se um novo statement foi adicionado
-  * Retorna FALSE se este foi adicionado a um incompleto
+  * Retorna FALSE se este foi incorporado a um statement incompleto (isto é, não terminava com um \n)
   */
 bool addStatementNaFuncaoCorrente(Pstatements statement){
 	
@@ -356,18 +294,19 @@ bool addStatementNaFuncaoCorrente(Pstatements statement){
 		
 		
 		if(stat[len - 1] == '\n'){
-			// não terminou o statement
+			// o statement anterior estava completado
+			// adiciona um novo statement
 			f->ultimoStatement = statement;
 			s->proximoStatement = statement;
 			
 			return TRUE;
 		}
 		
-		// acrescenta no final
+		// acrescenta no final do statement incompleto
 		s->statement = (string) malloc((strlen(stat) + strlen(statement->statement) + 1) * sizeof(char));
 		sprintf(s->statement, "%s%s", stat, statement->statement);
 		
-		// o libera da memória
+		// libera o candidato a novo da memória
 		free(statement);
 		
 		return FALSE;
@@ -401,7 +340,7 @@ string getVariavelDaAtribuicao(){
 		
 	int len = strlen(s->statement);	
 		
-	//string stat = s->statement;
+	
 	string stat;
 	
 	stat = (string) malloc(len * sizeof(char));
@@ -442,8 +381,6 @@ string getVariavelDaAtribuicao(){
 		var = (string) malloc((k + 2) * sizeof(char));
 		
 		strncpy (var, stat, k + 1);
-		
-		//sprintf(var, "%s%s", stat, statement->statement);
 		
 	}
 	
@@ -496,7 +433,6 @@ string getFuncaoDeAtivacao(int *posArg){
 		
 	int len = strlen(s->statement);	
 		
-	//string stat = s->statement;
 	string stat;
 	
 	stat = (string) malloc(len * sizeof(char));
@@ -548,6 +484,7 @@ string getFuncaoDeAtivacao(int *posArg){
 	// k : achou o limite superior!
 	
 	
+	// função auxiliar
 	bool ehUmOperador(char c){
 		if(stat[j] == '+' || stat[j] == '-' || stat[j] == '*' || 
 		   stat[j] == '=' || stat[j] == '>' || stat[j] == '<' || 
@@ -558,7 +495,7 @@ string getFuncaoDeAtivacao(int *posArg){
 	}
 	
 	
-	// procura o limite superior do nome da função
+	// procura o limite inferior do nome da função
 	for(j = k - 1; j > -1; j--){
 
 		if(ehUmOperador(stat[j]))
@@ -607,22 +544,21 @@ bool removeAPartirDeAbreColchete(string str){
 	
 	int len = strlen(str);
 	
-	string s = str;
-	
 	int k;
 	
-	for(k = 0; s[k] != '[' && k < len; k++){
-		
-		str = (string) malloc((k + 2) * sizeof(char));
-		
-		strncpy (str, s, k + 1);
-		
-	}
+	for(k = 0; str[k] != '[' && k < len; k++)
+		;
 	
-	if(k < len)
-		return TRUE;
+	if(k == len)
+		return FALSE;
 		
-	return FALSE;
+	string s = str;	
+		
+	str = (string) malloc((k + 2) * sizeof(char));
+		
+	strncpy (str, s, k + 1);	
+		
+	return TRUE;
 }
 
 
@@ -631,7 +567,7 @@ bool removeAPartirDeAbreColchete(string str){
 
 
 
-// UTIL
+/*      Util      */
 
 
 /**
@@ -657,47 +593,16 @@ int getTotalCasasDecimais(int num){
 }
 
 /**
-  * Converte a cadeia para letras minúsculas
+  * Substitue as ocorrências de sub em str por novo
   */
-string toLowerCase(string str){
-	
-	int i = 0;
-	
-	string s;
-	
-	s = (string) malloc(strlen(str) * sizeof(char));
-	
-	while (str[i]){
-		s[i] = tolower(str[i]);
-		i++;
-	}
-	
-	return s;
-}
-
-
-
-// pascal é case insensitive ! LEMBRAR DE FAZER AS MUDANÇAS NOS NOMES!!
-bool compareInsensitiveStrings(string str1, string str2){
-	
-	if(strcmp(toLowerCase(str1), toLowerCase(str2)) == 0)
-		return TRUE;
-	
-	return FALSE;
-	
-}
-
-/**
-  * Substitue as ocorrências de sub em str por new
-  */
-void replaceSubstring(string str, string sub, string new){
+void replaceSubstring(string str, string sub, string novo){
 	int stringLen, subLen, newLen;
 	int i = 0,j,k;
 	int flag = 0, start, end;
 	
 	stringLen = strlen(str);
 	subLen = strlen(sub);
-	newLen = strlen(new);
+	newLen = strlen(novo);
 
 	for(i = 0; i < stringLen; i++){
 	
@@ -723,12 +628,12 @@ void replaceSubstring(string str, string sub, string new){
 				i--;
 			}
 			
-			/* Inserting new substring */
+			/* Inserting novo substring */
 			for(j = start; j < start + newLen; j++){    
 				for(k = stringLen; k >= j; k--)
 					str[k+1] = str[k];
 					
-				str[j] = new[j - start];
+				str[j] = novo[j - start];
 				stringLen++;
 				i++;
 			}
@@ -901,7 +806,7 @@ string traduzNomeDaVariavel(string variavel){
 	string nome;
 	
 	nome = (string) malloc((strlen(variavel) + 1) * sizeof(char));
-	// no um underscore no início
+	// coloca um underscore no início
 	sprintf(nome, "_%s", variavel);
 	
 	int len = strlen(nome);
@@ -950,6 +855,9 @@ string traduzNomeDaVariavel(string variavel){
 
 
 
+/*      Geração de código      */
+
+
 /**
   * Inicializa os objetos
   */
@@ -959,6 +867,9 @@ void inicializaEstruturaDaGeracao(){
 }
 
 
+/**
+  * Destroi a cadeia de variaveis
+  */
 void destroiVariaveis(Pvariaveis variaveis){
 	
 	while(variaveis != NULL){
@@ -1047,7 +958,7 @@ void geraCodigo(string nomeDoArquivo){
 	fclose(arqsaida);
 	
 	
-	// remover tudo das estruturas da memória
+	// remover todas as estruturas da memória
 	destroiGeracaoDeCodigo();
 	
 }
@@ -1239,76 +1150,3 @@ void escreveFuncoes(){
 	}
 
 }
-
-
-/*
-int main(int argc, char* argv[]){
-
-	// testando estrutura
-
-	inicializaEstruturaDaGeracao();
-	
-	Ptipos tipoInt = getTipo(10, Tint);
-	
-	addVariavelGlobal(pascal_variavel_simples("global", Tstring));
-    addVariavelGlobal(pascal_variavel_simples("a", Tint));
-	addVariavelGlobal(pascal_variavel_simples("b", Tint));
-    addVariavelGlobal(pascal_variavel_lista("p", getTipo(10, Tint)->identificador));
-	addVariavelGlobal(pascal_variavel_lista("w", getTipo(10, Tint)->identificador));
-	addVariavelGlobal(pascal_variavel_simples("j", Tint));
-
-	// função  somaTodosElementosDosVetores
-	addFuncao(pascal_funcao("somaTodosElementosDosVetores", Tint));
-	
-	addParametroNaFuncaoCorrente(pascal_variavel_lista("m", getTipo(10, Tint)->identificador));
-	addParametroNaFuncaoCorrente(pascal_variavel_lista("n", getTipo(10, Tint)->identificador));
-	
-	addVariavelNaFuncaoCorrente(pascal_variavel_lista("r", getTipo(10, Tint)->identificador));
-	addVariavelNaFuncaoCorrente(pascal_variavel_simples("i", Tint));
-	addVariavelNaFuncaoCorrente(pascal_variavel_simples("resultado", Tint));
-	
-	// statements
-	
-	
-	// função  subtracaoEmModulo
-	addFuncao(pascal_funcao("subtracaoEmModulo", Tint));
-	
-	addParametroNaFuncaoCorrente(pascal_variavel_simples("a", Tint));
-	addParametroNaFuncaoCorrente(pascal_variavel_simples("b", Tint));
-	
-	addStatementNaFuncaoCorrente(pascal_statement("    if("));
-	addStatementNaFuncaoCorrente(pascal_statement("a"));
-	addStatementNaFuncaoCorrente(pascal_statement(">"));
-	addStatementNaFuncaoCorrente(pascal_statement("b"));
-	addStatementNaFuncaoCorrente(pascal_statement(") then begin\n    "));
-	addStatementNaFuncaoCorrente(pascal_statement("subtracaoEmModulo := "));
-	addStatementNaFuncaoCorrente(pascal_statement("a"));
-	addStatementNaFuncaoCorrente(pascal_statement(" - "));
-	addStatementNaFuncaoCorrente(pascal_statement("b"));
-	addStatementNaFuncaoCorrente(pascal_statement(";\n    exit;\n    "));
-	addStatementNaFuncaoCorrente(pascal_statement("end;\n    "));
-	addStatementNaFuncaoCorrente(pascal_statement("subtracaoEmModulo := "));
-	addStatementNaFuncaoCorrente(pascal_statement("b"));
-	addStatementNaFuncaoCorrente(pascal_statement(" - "));
-	addStatementNaFuncaoCorrente(pascal_statement("a"));
-	addStatementNaFuncaoCorrente(pascal_statement(";\n    exit;\n   "));
-	
-	
-	// função  conversorADTresBits
-	addFuncao(pascal_funcao("conversorADTresBits", Tint));
-	
-	addParametroNaFuncaoCorrente(pascal_variavel_simples("n", Tint));
-	
-	// statements
-
-	
-	// função  main
-	addFuncao(pascal_funcao("main", Tvoid));
-
-	// statements
-	
-	
-	geraCodigo("testando");
-	
-}
-*/

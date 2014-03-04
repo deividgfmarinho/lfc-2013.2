@@ -35,9 +35,7 @@ unsigned int hash(string chave){
 
 /* SIMBOLOS */
 
-				 
-// operações
-				
+	
 /**
   * Cria um símbolo
   */				
@@ -127,7 +125,10 @@ void destroiSimbolos(){
 
 
 
-/* TABELA DE HASHING */
+
+
+
+/* AMBIENTES */
 						 
 
 /**
@@ -179,7 +180,7 @@ void *procuraSimboloNoAmbiente(Ambiente ambiente, Simbolo simbol) {
 }
 
 
-// cria um símbolo para identificador ser o marcador de início de escopo
+// Cria um símbolo para identificar o marcador de início de escopo
 static struct TSimbolo marcadorDeEscopo = {"<mark>", 0};
 
 

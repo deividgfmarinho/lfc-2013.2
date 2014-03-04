@@ -27,16 +27,22 @@ struct TSimbolo {	string nome;
 // Funções
 
 // Obtém o símbolo na tabela de símbolos a partir da identificação.
-Simbolo getSimbolo(string nome);       
+Simbolo getSimbolo(string nome);   
+
+// Obtém o identificador do símbolo    
 string getIdentificadorDoSimbolo(Simbolo simbol); 
+
+// Destrói a cadeia de símbolos
 void destroiSimbolo(Simbolo simbolo);
+
+// Destrói todas as cadeias de símbolos da tabela de strings
 void destroiSimbolos();
 
 
 
 
 
-/* Ambiente */
+/* Ambientes */
 typedef struct TBinder *Binder; 
 typedef struct TAmbiente *Ambiente;
 

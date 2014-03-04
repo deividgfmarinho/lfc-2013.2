@@ -360,7 +360,7 @@ void adicionaStatementDeChamadaDeFuncao(Ambiente ambiente_variaveis, Ambiente am
 		sprintf(anterior, "readln(%s);\n", id);
 			
 		// acrescentar um statement na linha anterior usando o readln	
-		addNoStatementAnteriorDaFuncaoCorrente(pascal_statement(getStatementIdentado(anterior)));
+		addStatementAnteriorDaFuncaoCorrente(pascal_statement(getStatementIdentado(anterior)));
 	
 	}else if(strcmp(idFuncao, "output") == 0)
 		addStatementNaFuncaoCorrente(pascal_statement("writeln"));
@@ -579,7 +579,7 @@ void semantica_vardecl(Ambiente ambiente_variaveis, Tvardeclaracao vardecl){
 		// Nao e possivel declarar o tipo de uma variavel como void
 		if(vardecl->uniao.Ttesp_id_num.tesp == Tvoid){
 			fprintf(stderr,"Erro semantico. Variavel '%s' nao pode ser do tipo void!\n", 
-					getIdentificadorDoSimbolo(vardecl->uniao.Ttesp_id.id));
+					getIdentificadorDoSimbolo(vardecl->uniao.Ttesp_id_num.id));
 			destroiGeracaoDeCodigo();   
 			exit(1);
 		}
@@ -587,7 +587,7 @@ void semantica_vardecl(Ambiente ambiente_variaveis, Tvardeclaracao vardecl){
 		// Tamanho do vetor deve ser maior que zero
 		if(vardecl->uniao.Ttesp_id_num.num <= 0){
 			fprintf(stderr,"Erro semantico. Tamanho do vetor '%s' deve ser um numero inteiro positivo!\n", 
-					getIdentificadorDoSimbolo(vardecl->uniao.Ttesp_id.id));
+					getIdentificadorDoSimbolo(vardecl->uniao.Ttesp_id_num.id));
 			destroiGeracaoDeCodigo();   
 			exit(1);
 		}
@@ -599,7 +599,7 @@ void semantica_vardecl(Ambiente ambiente_variaveis, Tvardeclaracao vardecl){
 		
 
 		// adiciona a variável na estrutura da geração de código
-		string varID = traduzNomeDaVariavel(getIdentificadorDoSimbolo(vardecl->uniao.Ttesp_id.id)); 
+		string varID = traduzNomeDaVariavel(getIdentificadorDoSimbolo(vardecl->uniao.Ttesp_id_num.id)); 
 		
 	
 		// antes, deve-se verificar se é um início e final de escopo, 
@@ -1051,7 +1051,6 @@ void semantica_retdecl(Ambiente ambiente_variaveis, Ambiente ambiente_funcoes, T
 		
 		Tbindingtipos bindingFuncao = (Tbindingtipos) funcaoCorrente->valor;
 	
-		//Ttipoespecificador tipoDaFuncao = ((Tbindingtipos) funcaoCorrente->valor)->uniao.Ttipofuncao.tipo;
 		
 		// O tipo da expressão de retorno deve ser o mesmo do da funcao corrente
 		if(expressao->tipo == Ftipolista ||  !tiposSaoCompativeis(bindingFuncao, expressao)){
@@ -1267,14 +1266,14 @@ Tbindingtipos semantica_simplexp(Ambiente ambiente_variaveis, Ambiente ambiente_
 		Tbindingtipos simplexp2 = semantica_simplexp(ambiente_variaveis, ambiente_funcoes, 
 													 simplexp->uniao.Tsimplexp_rel_simplexp.simplexp2);
 		
-		// Avalia a relacao
+		// Avalia a relação
 		if(!tiposSaoCompativeis(simplexp1, simplexp2)){
 			fprintf(stderr,"Erro semantico. Operador condicional entre tipos incompativeis!\n");
 			destroiGeracaoDeCodigo();   
 			exit(1);
 		}
 		
-		// nao existe operacao relacional entre tipos string ou entre listas
+		// Não existe operação relacional entre tipos string ou entre listas
 		if( (simplexp1->tipo == Ftiposimples && simplexp1->uniao.tipo == Tstring) ||
 			(simplexp1->tipo == Ftipofuncao && simplexp1->uniao.Ttipofuncao.tipo == Tstring) ||
 			(simplexp1->tipo == Ftipolista) ){
@@ -1283,7 +1282,7 @@ Tbindingtipos semantica_simplexp(Ambiente ambiente_variaveis, Ambiente ambiente_
 				exit(1);
 		}
 		
-		// operacao relacional retorna um tipo inteiro (como se fosse o booleano)
+		// Operação relacional retorna um tipo inteiro (como se fosse o booleano)
 		return binding_tipo_simples(Tint);
 		
 	}
@@ -1300,14 +1299,14 @@ Tbindingtipos semantica_simplexp(Ambiente ambiente_variaveis, Ambiente ambiente_
 		Tbindingtipos simplexp2 = semantica_simplexp(ambiente_variaveis, ambiente_funcoes, 
 													 simplexp->uniao.Tsimplexp_soma_simplexp.simplexp2);
 		
-		// Avalia a relacao
+		// Avalia a relação
 		if(!tiposSaoCompativeis(simplexp1, simplexp2)){
 			fprintf(stderr,"Erro semantico. Operador de soma entre tipos incompativeis!\n");
 			destroiGeracaoDeCodigo();   
 			exit(1);
 		}
 		
-		// nao existe operacao de soma (concatenação) ou subtração entre tipos string ou entre listas
+		// Não existe operação de soma (concatenação) ou subtração entre tipos string ou entre listas
 		if( (simplexp1->tipo == Ftiposimples && simplexp1->uniao.tipo == Tstring) ||
 			(simplexp1->tipo == Ftipofuncao && simplexp1->uniao.Ttipofuncao.tipo == Tstring) ||
 			(simplexp1->tipo == Ftipolista) ){
@@ -1334,14 +1333,14 @@ Tbindingtipos semantica_simplexp(Ambiente ambiente_variaveis, Ambiente ambiente_
 		Tbindingtipos simplexp2 = semantica_simplexp(ambiente_variaveis, ambiente_funcoes, 
 													 simplexp->uniao.Tsimplexp_mult_simplexp.simplexp2);
 		
-		// Avalia a relacao
+		// Avalia a relação
 		if(!tiposSaoCompativeis(simplexp1, simplexp2)){
 			fprintf(stderr,"Erro semantico. Operador de soma entre tipos incompativeis!\n");
 			destroiGeracaoDeCodigo();   
 			exit(1);
 		}
 		
-		// nao existe operacao de multiplicação ou divisão entre tipos string ou entre listas
+		// Não existe operação de multiplicação ou divisão entre tipos string ou entre listas
 		if( (simplexp1->tipo == Ftiposimples && simplexp1->uniao.tipo == Tstring) ||
 			(simplexp1->tipo == Ftipofuncao && simplexp1->uniao.Ttipofuncao.tipo == Tstring) ||
 			(simplexp1->tipo == Ftipolista) ){
@@ -1433,7 +1432,7 @@ Tbindingtipos semantica_args(Ambiente ambiente_variaveis, Ambiente ambiente_func
 		return binding;
 	}
 	// significa que nao tem parametros
-	// e argumento = NULL
+	// => argumento = NULL
 	return NULL;
 	
 }
