@@ -7,7 +7,9 @@ Repositório para inclusão dos trabalhos referente à disciplina de Linguagens 
 
 ------------------------------------------------------------------------------------------------------------------------
 
-            COMPILAR E GERAR O EXECUTÁVEL DO COMPILADOR PARA C-
+COMPILAR E GERAR O EXECUTÁVEL DO COMPILADOR PARA C-
+
+
 
 
 Há duas maneiras de fazer:
@@ -34,7 +36,10 @@ Há duas maneiras de fazer:
 
 ------------------------------------------------------------------------------------------------------------------------
 
-                    USO DO COMPILADOR PARA C-
+USO DO COMPILADOR PARA C-
+
+
+
 
 Para usar o compilador, crie um arquivo fonte de extensão .c, e coloque-o como entrada do compilador.
 
@@ -63,7 +68,7 @@ No shell:
 
 ------------------------------------------------------------------------------------------------------------------------
 
-                        POSSÍVEIS SAÍDAS NA TELA
+POSSÍVEIS SAÍDAS NA TELA
                         
 1) Se o programa fonte, usado como entrada, não contiver erros, uma mensagem será exibida informando que um um arquivo 
 novo foi criado. Este arquivo contém a tradução do código C- (informado na entrada) em Pascal.
