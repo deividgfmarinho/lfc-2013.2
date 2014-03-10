@@ -332,47 +332,48 @@ string getVariavelDaAtribuicao(){
 	for(f = funcoes; f->proximaFuncao != NULL; f = f->proximaFuncao)
 		;
 	
-	
 	if(f->ultimoStatement == NULL)
 		return NULL;
 	
 	Pstatements s = f->ultimoStatement;
-		
-	int len = strlen(s->statement);	
-		
 	
-	string stat;
+	if(s == NULL || s->statement == NULL)
+		return "<NEW STATEMENT>";
 	
-	stat = (string) malloc(len * sizeof(char));
 	
-	strcpy(stat, s->statement);
 	
-	// remove os espaços
-	replaceSubstring(stat, " ", "");
+	int len; 	
 	
-	if(stat[len - 1] == '\n')
+	string stat;	
+	
+	stat = removeEspacos(s->statement);
+	
+	len = strlen(stat);
+	
+	if(len == 0 || stat[len - 1] == '\n')
 		// significa que um novo statement deve ser declarado
 		return "<NEW STATEMENT>";
 	
-	stat = s->statement;	
+	
+	len = strlen(s->statement);
+	
+	stat = (string) malloc( (len + 1) * sizeof(char));
+	
+	sprintf(stat, "%s", s->statement);
 		
-	len = strlen(stat);	
 		
 	int k;	
 	
 	string var;
 	
-	int ident = 0; // possível identação
-	
 	bool inicioVazio = TRUE;
 		
 	for(k = 0; k < len; k++){
 		
-		if(stat[k] == ' ' && inicioVazio){
-			ident++;
-			continue;
-		}else
-			inicioVazio = FALSE;
+		if(stat[k] == ' ' && inicioVazio)
+			continue; // já não perde tempo com as operações abaixo
+		
+		inicioVazio = FALSE; 
 			
 		
 		if(k < len - 1 && stat[k] == ':' && stat[k + 1] == '=')
@@ -384,27 +385,13 @@ string getVariavelDaAtribuicao(){
 		
 	}
 	
-
+	// se são iguais, significa que não tinha atribuição
 	if(strcmp(var, stat) == 0){
 		free(var);
 		return NULL;
 	}
 	
-	if(ident > 0){
-		// remove a identação
-		len = strlen(var);
-		
-		for(k = 0; k < len - ident; k++)
-			var[k] = var[k + ident];
-			
-		for(k = len - ident; k < len; k++)
-			var[k] = '\0';
-		
-	}
-	
-	replaceSubstring(var, " ", "");
-	
-	return var;
+	return removeEspacos(var);
 }
 
 
@@ -431,28 +418,32 @@ string getFuncaoDeAtivacao(int *posArg){
 	
 	Pstatements s = f->ultimoStatement;
 		
-	int len = strlen(s->statement);	
+	if(s == NULL || s->statement == NULL)
+		return "<NEW STATEMENT>";
+
+		
+		
+	int len; 	
 		
 	string stat;
 	
-	stat = (string) malloc(len * sizeof(char));
+	stat = removeEspacos(s->statement);
 	
-	strcpy(stat, s->statement);
+	len = strlen(stat);
 	
-	// remove os espaços
-	replaceSubstring(stat, " ", "");
-		
-	
-	
-	if(stat[len - 1] == '\n')
+	if(len == 0 || stat[len - 1] == '\n')
 		// significa que um novo statement deve ser declarado
 		return "<NEW STATEMENT>";
 	
 	
-	stat = s->statement;
+	
+	len = strlen(s->statement);
+	
+	stat = (string) malloc( (len + 1) * sizeof(char));
+	
+	sprintf(stat, "%s", s->statement);
 		
-	len = strlen(stat);		
-		
+			
 	int k, j;	
 	
 	*posArg = 1;
@@ -590,6 +581,45 @@ int getTotalCasasDecimais(int num){
 	}
 	
 	return cont;
+}
+
+
+/**
+  * Remove todos os espaços da string
+  */
+string removeEspacos(string input)                                         
+{
+    string output;
+	
+	int i, j, len;
+	
+	len = strlen(input);
+	
+	output = (string) malloc(len * sizeof(char));
+	
+	//strcpy(output, input);
+	sprintf(output, "%s", input);
+	
+    for (i = 0, j = 0; i < len; i++,j++)          
+    {
+        if (input[i] != ' ')                           
+            output[j] = input[i];                     
+        else
+            j--;                                     
+    }
+	
+	if(j < len){
+		
+		if(j < 0)
+			j = 0;
+			
+		output[j] = '\0';
+		
+		//output = (string) realloc(output, (j + 1) * sizeof(char));
+		
+	}
+	
+    return output;
 }
 
 /**
@@ -890,7 +920,6 @@ void destroiGeracaoDeCodigo(){
 	
 	if(nomeDoPrograma != NULL)
 		free(nomeDoPrograma);
-		
 	
 	// variáveis globais
 	destroiVariaveis(variaveisGlobais);
@@ -956,7 +985,6 @@ void geraCodigo(string nomeDoArquivo){
 
 	// fecha o arquivo
 	fclose(arqsaida);
-	
 	
 	// remover todas as estruturas da memória
 	destroiGeracaoDeCodigo();

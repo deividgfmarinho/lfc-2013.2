@@ -33,14 +33,19 @@ string arquivo = "codigogerado";
   */
 void destroiAmbiente(Ambiente ambiente){
 	
+	if(ambiente == NULL)
+		return;
+	
 	Binder binder = ambiente->topoDaPilha;
 	
 	while(binder != NULL){
 		Binder b = binder;
 		binder = binder->antigoTopoDaPilha;
 		
+		b->simbol = NULL;
+		
 		if(b->valor != NULL){
-			Tbindingtipos binding = (Tbindingtipos) binder->valor;
+			Tbindingtipos binding = (Tbindingtipos) b->valor;
 			while(binding != NULL){
 				Tbindingtipos bt = binding;
 				if(binding->tipo == Ftipofuncao)
@@ -49,7 +54,7 @@ void destroiAmbiente(Ambiente ambiente){
 					binding = NULL;
 				free(bt);
 			}
-		}
+		} 
 		
 		free(b);
 	}
@@ -249,15 +254,16 @@ void adicionaStatementDeChamadaDeFuncao(Ambiente ambiente_variaveis, Ambiente am
 		// usá-la numa linha acima para fazer o readln e substituir pelo input da expressão
 		
 		Ttipoespecificador tipoesp = Tvoid;
-	
+		
 		// tem que descobrir o tipo do dado que está chamando
 		string id = getVariavelDaAtribuicao();
-		
+			
 		if(id == NULL){
 		
 			// verificar se é chamada de função
 			int posArg = 0;
 			id = getFuncaoDeAtivacao(&posArg);
+			
 			
 			if(id == NULL)
 				// está dentro de uma expressão
@@ -307,7 +313,8 @@ void adicionaStatementDeChamadaDeFuncao(Ambiente ambiente_variaveis, Ambiente am
 			// remove os underscores e espaços para obter o id da variável original
 			replaceSubstring(id, "__", "");
 			replaceSubstring(id, "_", "");
-			replaceSubstring(id, " ", "");
+			//id = removeEspacos(id);
+
 			
 			bool ehVetor = removeAPartirDeAbreColchete(id);
 		
@@ -328,6 +335,7 @@ void adicionaStatementDeChamadaDeFuncao(Ambiente ambiente_variaveis, Ambiente am
 				
 		}
 		
+
 		// verificar se já existe.. se não existe, criá-la como variável global
 		if(tipoesp == Tint){
 			contChamadasInputInteger++;
@@ -352,16 +360,19 @@ void adicionaStatementDeChamadaDeFuncao(Ambiente ambiente_variaveis, Ambiente am
 			}
 		}
 		
+
 		// faz uso da variável temporária
 		addStatementNaFuncaoCorrente(pascal_statement(id));
 		
+
 		string anterior;
 		anterior = (string) malloc((strlen(id) + 10 + 1));
 		sprintf(anterior, "readln(%s);\n", id);
 			
 		// acrescentar um statement na linha anterior usando o readln	
 		addStatementAnteriorDaFuncaoCorrente(pascal_statement(getStatementIdentado(anterior)));
-	
+		
+		
 	}else if(strcmp(idFuncao, "output") == 0)
 		addStatementNaFuncaoCorrente(pascal_statement("writeln"));
 	
@@ -1402,7 +1413,6 @@ Tbindingtipos semantica_ativacao(Ambiente ambiente_variaveis, Ambiente ambiente_
 		exit(1);
 	}
 	
-
 
 	adicionaStatementDeChamadaDeFuncao(ambiente_variaveis, ambiente_funcoes, getIdentificadorDoSimbolo(ativacao->id));
 	

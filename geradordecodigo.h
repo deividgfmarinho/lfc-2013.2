@@ -89,6 +89,7 @@ string getFuncaoDeAtivacao(int *posArg);
 // Util
 void print(string text);
 int getTotalCasasDecimais(int num);
+string removeEspacos(string input);
 void replaceSubstring(string str, string sub, string new);
 string traduzTipo(Ttipoespecificador tipo);
 string traduzRelacional(Trelacional rel);

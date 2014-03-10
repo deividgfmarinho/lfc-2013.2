@@ -96,7 +96,7 @@ string getIdentificadorDoSimbolo(Simbolo simbol) {
 void destroiSimbolo(Simbolo simbolo){
 	
 	while(simbolo != NULL){
-		free(simbolo->nome);
+		//free(simbolo->nome);
 		Simbolo s = simbolo;
 		simbolo = simbolo->proxSimbolo;
 		free(s);
